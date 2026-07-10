@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pibras.dev/schemas/fixtures/pre-reconciliation/mbras.schema.json",
+  "title": "PIBRAS pre-reconciliation contract snapshot (frozen)",
+  "$defs": {
+    "AuditChangeType": {
+      "type": "string",
+      "enum": ["create", "update", "delete", "merge", "split"]
+    },
+    "AuditEvent": {
+      "type": "object",
+      "required": ["id", "entity_id", "change_type", "occurred_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "entity_id": { "type": "string", "format": "uuid" },
+        "change_type": { "$ref": "#/$defs/AuditChangeType" },
+        "trust_tier": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "occurred_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "ExposureRule": {
+      "type": "object",
+      "required": ["id", "exposure_level"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "exposure_level": { "type": "string", "enum": ["public", "restricted", "private"] },
+        "field_visibility": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

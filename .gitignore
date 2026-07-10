@@ -29,3 +29,6 @@ secrets/
 dist/*
 !dist/release/
 !dist/release/**
+
+# Local worktrees (agent state)
+.worktrees/

@@ -1,0 +1,22 @@
+{
+  "$comment": "FROZEN expected-red manifest for tests/contracts/pre-reconciliation fixtures. Never refresh. Identity rules (rule_class=identity, e.g. PIBRAS-IDN-001) are deliberately excluded.",
+  "severity_enum": ["critical", "high", "medium", "low", "info"],
+  "excluded_rule_classes": ["identity"],
+  "checks": {
+    "contract-parity": {
+      "expected_findings": [
+        { "id": "PIBRAS-PAR-001", "severity": "high" },
+        { "id": "PIBRAS-PAR-002", "severity": "medium" },
+        { "id": "PIBRAS-PAR-003", "severity": "medium" },
+        { "id": "PIBRAS-PAR-004", "severity": "medium" }
+      ]
+    },
+    "domain-invariants": {
+      "expected_findings": [
+        { "id": "PIBRAS-INV-001", "severity": "critical" },
+        { "id": "PIBRAS-INV-002", "severity": "high" },
+        { "id": "PIBRAS-INV-003", "severity": "medium" }
+      ]
+    }
+  }
+}
