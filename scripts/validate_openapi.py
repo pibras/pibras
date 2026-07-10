@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,7 +33,23 @@ type YamlObject = dict[str, YamlValue]
 ROOT: Final = Path(__file__).resolve().parents[1]
 OPENAPI_PATH: Final = ROOT / "openapi.yaml"
 SCHEMA_PATH: Final = ROOT / "schema" / "mbras.schema.json"
-REQUIRED_PATHS: Final = frozenset(("/units/{unit_id}", "/properties/{property_id}", "/listings/{listing_id}"))
+APPROVED_SCHEMA_REF_ROOT: Final = "./schema/mbras.schema.json#/$defs/"
+COMPONENT_REF_ROOT: Final = "#/components/"
+REQUIRED_PATHS: Final = frozenset(
+    (
+        "/units/{unit_id}",
+        "/properties/{property_id}",
+        "/listings/{listing_id}",
+        "/properties/{property_id}/exposure-policy",
+        "/conformance/cases",
+    )
+)
+# Every operation must declare the secured error surface; parameterized
+# operations must additionally declare 400 (path-parameter validation)
+# and 404 (missing resource).
+SECURITY_RESPONSES: Final = frozenset(("401", "403"))
+PARAMETERIZED_RESPONSES: Final = frozenset(("400", "404"))
+PATH_TEMPLATE: Final = re.compile(r"\{([^{}]+)\}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,21 +123,115 @@ def references(value: YamlValue) -> list[str]:
 
 
 def validate_ref(ref: str, spec: YamlObject, canonical_schema: YamlObject) -> str | None:
-    schema_prefix = "./schema/mbras.schema.json#/$defs/"
-    component_prefix = "#/components/schemas/"
-    if ref.startswith(schema_prefix):
+    if ref.startswith(APPROVED_SCHEMA_REF_ROOT):
         defs = as_object(canonical_schema.get("$defs"), "schema.$defs")
-        target = ref.removeprefix(schema_prefix)
+        target = ref.removeprefix(APPROVED_SCHEMA_REF_ROOT)
         if target not in defs:
             return f"missing JSON Schema definition {target!r}"
         return None
-    if ref.startswith(component_prefix):
-        schemas = as_object(as_object(spec.get("components"), "components").get("schemas"), "components.schemas")
-        target = ref.removeprefix(component_prefix)
-        if target not in schemas:
-            return f"missing OpenAPI component schema {target!r}"
+    if ref.startswith(COMPONENT_REF_ROOT):
+        components = as_object(spec.get("components"), "components")
+        section_name, _, target = ref.removeprefix(COMPONENT_REF_ROOT).partition("/")
+        section = as_object(components.get(section_name), f"components.{section_name}")
+        if target not in section:
+            return f"missing OpenAPI component {section_name}/{target}"
         return None
-    return None
+    return f"external ref does not use approved root {APPROVED_SCHEMA_REF_ROOT!r}"
+
+
+def components_section(spec: YamlObject, name: str) -> YamlObject:
+    return as_object(as_object(spec.get("components"), "components").get(name), f"components.{name}")
+
+
+def resolve_parameter(param: YamlValue, spec: YamlObject, location: str) -> YamlObject:
+    param_obj = as_object(param, location)
+    ref = param_obj.get("$ref")
+    if isinstance(ref, str) and ref.startswith("#/components/parameters/"):
+        return as_object(
+            components_section(spec, "parameters").get(ref.removeprefix("#/components/parameters/")),
+            ref,
+        )
+    return param_obj
+
+
+def validate_security_scheme(spec: YamlObject) -> list[CheckFailure]:
+    failures: list[CheckFailure] = []
+    try:
+        schemes = components_section(spec, "securitySchemes")
+    except ShapeError:
+        return [CheckFailure(OPENAPI_PATH, "components.securitySchemes missing")]
+    bearer = schemes.get("bearerAuth")
+    if not isinstance(bearer, dict) or bearer.get("type") != "http" or bearer.get("scheme") != "bearer":
+        failures.append(CheckFailure(OPENAPI_PATH, "bearerAuth security scheme must be type=http scheme=bearer"))
+    global_security = spec.get("security")
+    if not (
+        isinstance(global_security, list)
+        and any(isinstance(entry, dict) and "bearerAuth" in entry for entry in global_security)
+    ):
+        failures.append(CheckFailure(OPENAPI_PATH, "global security must require bearerAuth"))
+    return failures
+
+
+def validate_error_fixtures(spec: YamlObject) -> list[CheckFailure]:
+    failures: list[CheckFailure] = []
+    try:
+        examples = components_section(spec, "examples")
+    except ShapeError:
+        return [CheckFailure(OPENAPI_PATH, "components.examples missing (auth/policy fixtures required)")]
+    expected_fixtures = {
+        "MissingAuthError": "unauthorized",
+        "PolicyDeniedError": "policy_denied",
+        "InvalidPathParameterError": "invalid_path_parameter",
+    }
+    for fixture_name, expected_code in expected_fixtures.items():
+        fixture = examples.get(fixture_name)
+        if not isinstance(fixture, dict):
+            failures.append(CheckFailure(OPENAPI_PATH, f"missing error fixture components.examples.{fixture_name}"))
+            continue
+        value = fixture.get("value")
+        if not (isinstance(value, dict) and value.get("code") == expected_code and isinstance(value.get("message"), str)):
+            failures.append(
+                CheckFailure(
+                    OPENAPI_PATH,
+                    f"fixture {fixture_name} must be an Error payload with code={expected_code!r}",
+                )
+            )
+    return failures
+
+
+def validate_path_parameters(
+    path_name: str, operation_obj: YamlObject, spec: YamlObject
+) -> list[CheckFailure]:
+    failures: list[CheckFailure] = []
+    template_names = PATH_TEMPLATE.findall(path_name)
+    parameters = operation_obj.get("parameters")
+    declared: dict[str, YamlObject] = {}
+    if isinstance(parameters, list):
+        for index, param in enumerate(parameters):
+            resolved = resolve_parameter(param, spec, f"paths.{path_name}.get.parameters[{index}]")
+            if resolved.get("in") == "path":
+                declared[as_string(resolved.get("name"), f"{path_name} parameter name")] = resolved
+    for template_name in template_names:
+        resolved = declared.get(template_name)
+        if resolved is None:
+            failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} GET missing path parameter {template_name!r}"))
+            continue
+        if resolved.get("required") is not True:
+            failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} path parameter {template_name!r} must be required"))
+        schema = resolved.get("schema")
+        if not (isinstance(schema, dict) and schema.get("type") == "string" and schema.get("format") == "uuid"):
+            failures.append(
+                CheckFailure(
+                    OPENAPI_PATH,
+                    f"{path_name} path parameter {template_name!r} must validate as string/uuid",
+                )
+            )
+    for declared_name in declared:
+        if declared_name not in template_names:
+            failures.append(
+                CheckFailure(OPENAPI_PATH, f"{path_name} declares unknown path parameter {declared_name!r}")
+            )
+    return failures
 
 
 def validate_operations(spec: YamlObject) -> list[CheckFailure]:
@@ -138,8 +249,12 @@ def validate_operations(spec: YamlObject) -> list[CheckFailure]:
         if operation_obj.get("operationId") is None:
             failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} GET missing operationId"))
         responses = as_object(operation_obj.get("responses"), f"paths.{path_name}.get.responses")
-        if "200" not in responses:
-            failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} GET missing 200 response"))
+        required_statuses = {"200"} | set(SECURITY_RESPONSES)
+        if PATH_TEMPLATE.search(path_name):
+            required_statuses |= set(PARAMETERIZED_RESPONSES)
+        for status in sorted(required_statuses - responses.keys()):
+            failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} GET missing {status} response"))
+        failures.extend(validate_path_parameters(path_name, operation_obj, spec))
     return failures
 
 
@@ -150,6 +265,8 @@ def validate_openapi() -> list[CheckFailure]:
     version = as_string(spec.get("openapi"), "openapi")
     if not version.startswith("3.1."):
         failures.append(CheckFailure(OPENAPI_PATH, f"OpenAPI version must be 3.1.x, got {version}"))
+    failures.extend(validate_security_scheme(spec))
+    failures.extend(validate_error_fixtures(spec))
     failures.extend(validate_operations(spec))
     for ref in references(spec):
         ref_failure = validate_ref(ref, spec, canonical_schema)

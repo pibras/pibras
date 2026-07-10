@@ -6,7 +6,9 @@ info:
   description: >
     Este contrato define a superfície mínima esperada para uma implementação
     compatível: leitura de unidades, imóveis, listings, política de exposição
-    e catálogo de casos de conformidade.
+    e catálogo de casos de conformidade. É um contrato de referência; não
+    implementa um servidor de autenticação, mas exige portador (bearer) em
+    todas as operações e erros padronizados 400/401/403/404.
 servers:
   - url: https://api.pibras.org/v0
     description: URL ilustrativa para implementações de referência.
@@ -16,6 +18,8 @@ tags:
   - name: Listings
   - name: ExposurePolicy
   - name: Conformance
+security:
+  - bearerAuth: []
 paths:
   /units/{unit_id}:
     get:
@@ -27,6 +31,12 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/UnitResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
         "404":
           $ref: "#/components/responses/ErrorResponse"
   /properties/{property_id}:
@@ -39,6 +49,12 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/PropertyResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
         "404":
           $ref: "#/components/responses/ErrorResponse"
   /listings/{listing_id}:
@@ -51,6 +67,12 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/ListingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
         "404":
           $ref: "#/components/responses/ErrorResponse"
   /properties/{property_id}/exposure-policy:
@@ -63,6 +85,12 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/ExposurePolicyResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
         "404":
           $ref: "#/components/responses/ErrorResponse"
   /conformance/cases:
@@ -79,12 +107,26 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ConformanceTestCase"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Token portador exigido em todas as operações. Requisições sem
+        credencial recebem 401; credenciais sem permissão de exposição
+        recebem 403.
   parameters:
     UnitId:
       name: unit_id
       in: path
       required: true
+      description: Identificador UUID da unidade; valores fora do formato retornam 400.
       schema:
         type: string
         format: uuid
@@ -92,6 +134,7 @@ components:
       name: property_id
       in: path
       required: true
+      description: Identificador UUID do imóvel; valores fora do formato retornam 400.
       schema:
         type: string
         format: uuid
@@ -99,6 +142,7 @@ components:
       name: listing_id
       in: path
       required: true
+      description: Identificador UUID do listing; valores fora do formato retornam 400.
       schema:
         type: string
         format: uuid
@@ -122,6 +166,22 @@ components:
           type: string
         message:
           type: string
+  examples:
+    MissingAuthError:
+      summary: Requisição sem credencial portadora.
+      value:
+        code: unauthorized
+        message: Credencial portadora ausente ou inválida.
+    PolicyDeniedError:
+      summary: Exposição negada pela política vigente.
+      value:
+        code: policy_denied
+        message: A política de exposição vigente nega acesso a este recurso.
+    InvalidPathParameterError:
+      summary: Parâmetro de caminho fora do formato UUID.
+      value:
+        code: invalid_path_parameter
+        message: O identificador informado não é um UUID válido.
   responses:
     UnitResponse:
       description: Unidade física durável.
@@ -147,6 +207,33 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ExposurePolicy"
+    BadRequestResponse:
+      description: Parâmetro de caminho inválido (formato UUID exigido).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            invalidPathParameter:
+              $ref: "#/components/examples/InvalidPathParameterError"
+    UnauthorizedResponse:
+      description: Credencial portadora ausente ou inválida.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            missingAuth:
+              $ref: "#/components/examples/MissingAuthError"
+    ForbiddenResponse:
+      description: Acesso negado pela política de exposição.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            policyDenied:
+              $ref: "#/components/examples/PolicyDeniedError"
     ErrorResponse:
       description: Erro padronizado da API.
       content:
