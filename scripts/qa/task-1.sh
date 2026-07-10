@@ -66,7 +66,7 @@ rm -rf "$TMP"
 [[ ! -d "$TMP" ]]; check "sentinel-cleanup" $?
 
 # Manifest
-STATUS=completed; [[ ${#FAILURES[@]:-0} -gt 0 ]] && STATUS=failed
+STATUS=completed; [[ ${#FAILURES[@]} -gt 0 ]] && STATUS=failed
 mkdir -p "$(dirname "$REPORT")"
 python3 - "$REPORT" "$STATUS" <<'PY'
 import json, subprocess, sys, hashlib, datetime

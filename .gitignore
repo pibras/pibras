@@ -26,6 +26,6 @@ secrets/
 .vscode/
 
 # Build output (release bundles are re-admitted explicitly)
-dist/
+dist/*
 !dist/release/
 !dist/release/**
