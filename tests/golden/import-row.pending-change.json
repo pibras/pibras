@@ -1,0 +1,27 @@
+{
+  "id": "import-row-pending-change",
+  "import_batch_id": "88888888-8888-4888-8888-888888888888",
+  "ingestion_record": {
+    "source_system": "xml_generic",
+    "source_record_id": "XML-18495",
+    "sync_batch_id": "99999999-9999-4999-8999-999999999999",
+    "payload": {
+      "Valor": "16000000",
+      "CodImovel": "MB18495"
+    }
+  },
+  "pending_change": {
+    "entity_type": "property",
+    "entity_id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+    "proposed": {
+      "asking_price": {
+        "amount": 1600000000,
+        "currency": "BRL"
+      }
+    },
+    "source_system": "xml_generic",
+    "trust_tier": 5,
+    "state": "pending_review"
+  },
+  "expected_result": "valid"
+}

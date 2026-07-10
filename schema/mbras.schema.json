@@ -1,0 +1,833 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://standard.mbras.com.br/schema/mbras.schema.json",
+  "title": "Padrão MBRAS de Dados Imobiliários",
+  "description": "Modelo canônico do MBRAS Property Inventory Hub. Consuma entidades via $ref, ex.: mbras.schema.json#/$defs/Property. Versão 0.1.0.",
+  "version": "0.1.0",
+  "$comment": "Dinheiro: amount em centavos (inteiro). Datas/instantes: ISO 8601 UTC. Áreas em m². Coordenadas WGS84.",
+
+  "$defs": {
+
+    "SourceSystem": {
+      "type": "string",
+      "enum": ["mbras_internal","twenty_crm","kenlo","vista","jetimob","imobzi","tecimob","orulo","zap_vivareal","olx","xml_generic","csv_import","excel_import","manual","other"]
+    },
+    "RecordState": {
+      "type": "string",
+      "enum": ["draft","pending_review","active","conflict","duplicate","rejected","archived"]
+    },
+    "PropertyType": {
+      "type": "string",
+      "enum": ["apartment","penthouse","house","house_condo","studio","loft","flat","land","farm","commercial_room","commercial_building","warehouse","hotel","whole_building","other"]
+    },
+    "TransactionType": {
+      "type": "string",
+      "enum": ["sale","rent","sale_rent","season_rent"]
+    },
+    "PropertyStatus": {
+      "type": "string",
+      "enum": ["draft","available","reserved","under_offer","sold","rented","suspended","off_market","archived"]
+    },
+    "Availability": {
+      "type": "string",
+      "enum": ["available","unavailable","conditioned"]
+    },
+    "Currency": {
+      "type": "string",
+      "enum": ["BRL","USD","EUR"]
+    },
+    "ExposureLevel": {
+      "type": "string",
+      "enum": ["public","restricted","confidential","off_market"]
+    },
+    "Confidentiality": {
+      "type": "string",
+      "enum": ["normal","sensitive","highly_confidential"]
+    },
+    "MediaType": {
+      "type": "string",
+      "enum": ["photo","video","floor_plan","virtual_tour","document","aerial"]
+    },
+    "MediaRole": {
+      "type": "string",
+      "enum": ["cover","gallery","floor_plan","facade","common_area","view","amenity","other"]
+    },
+    "MediaRights": {
+      "type": "string",
+      "enum": ["owned","licensed","restricted"]
+    },
+    "ChannelType": {
+      "type": "string",
+      "enum": ["website","portal","crm","broker_network","off_market_pdf","paid_ad","landing_page","whatsapp","email"]
+    },
+    "OwnerType": {
+      "type": "string",
+      "enum": ["individual","company"]
+    },
+    "OwnerRole": {
+      "type": "string",
+      "enum": ["owner","representative","heir","attorney"]
+    },
+    "BrokerRole": {
+      "type": "string",
+      "enum": ["listing","co_listing","capture"]
+    },
+    "DocumentType": {
+      "type": "string",
+      "enum": ["matricula","iptu","contrato","escritura","laudo_avaliacao","planta_aprovada","habite_se","other"]
+    },
+    "ListingStatus": {
+      "type": "string",
+      "enum": ["draft","published","paused","expired","removed"]
+    },
+    "PriceDisplay": {
+      "type": "string",
+      "enum": ["visible","on_request"]
+    },
+    "AddressDisplay": {
+      "type": "string",
+      "enum": ["full","approximate","hidden"]
+    },
+    "SunOrientation": {
+      "type": "string",
+      "enum": ["morning","afternoon","full_day","none"]
+    },
+    "BuildingStatus": {
+      "type": "string",
+      "enum": ["planning","under_construction","ready"]
+    },
+    "GeoPrecision": {
+      "type": "string",
+      "enum": ["exact","approximate","neighborhood","none"]
+    },
+    "ComputedBy": {
+      "type": "string",
+      "enum": ["human","agent","hermes"]
+    },
+    "GeographyType": {
+      "type": "string",
+      "enum": ["country","state","city","zone","neighborhood","microregion","condominium_region"]
+    },
+    "PartyType": {
+      "type": "string",
+      "enum": ["individual","company"]
+    },
+    "PolicyEffect": {
+      "type": "string",
+      "enum": ["allow","deny"]
+    },
+    "PolicyAction": {
+      "type": "string",
+      "enum": ["read","write","publish","export","send","approve"]
+    },
+    "PolicyDecision": {
+      "type": "string",
+      "enum": ["allow","deny","mask","needs_approval"]
+    },
+    "PolicyResourceType": {
+      "type": "string",
+      "enum": ["unit","property","listing","media","document","party","price","address"]
+    },
+    "DedupeReviewState": {
+      "type": "string",
+      "enum": ["unreviewed","auto_matched","needs_review","confirmed_duplicate","confirmed_unique"]
+    },
+    "RetentionAction": {
+      "type": "string",
+      "enum": ["delete","anonymize","review","archive"]
+    },
+    "DataSubjectRequestType": {
+      "type": "string",
+      "enum": ["access","correction","deletion","portability","objection"]
+    },
+    "DataSubjectRequestStatus": {
+      "type": "string",
+      "enum": ["received","verifying_identity","in_progress","fulfilled","rejected","expired"]
+    },
+    "ImportSourceType": {
+      "type": "string",
+      "enum": ["api","csv","excel","xml","database_dump","manual"]
+    },
+    "ImportBatchStatus": {
+      "type": "string",
+      "enum": ["draft","mapping","validating","reviewing","imported","failed","cancelled"]
+    },
+    "AuditChangeType": {
+      "type": "string",
+      "enum": ["insert","update","delete"]
+    },
+
+    "Money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount","currency"],
+      "properties": {
+        "amount": { "type": "integer", "description": "Valor em centavos da moeda (ex.: R$ 17.500.000,00 = 1750000000)" },
+        "currency": { "$ref": "#/$defs/Currency" }
+      }
+    },
+
+    "ExternalId": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace","key","value"],
+      "properties": {
+        "namespace": { "type": "string" },
+        "key": { "type": "string" },
+        "value": { "type": "string" }
+      }
+    },
+
+    "Provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_system","trust_tier","ingested_at"],
+      "properties": {
+        "source_system": { "$ref": "#/$defs/SourceSystem" },
+        "source_record_id": { "type": ["string","null"] },
+        "source_url": { "type": ["string","null"], "format": "uri" },
+        "trust_tier": { "type": "integer", "minimum": 1, "maximum": 6, "description": "1=diretoria_approved … 6=spreadsheet_import" },
+        "ingested_at": { "type": "string", "format": "date-time" },
+        "ingested_by": { "type": ["string","null"] },
+        "sync_batch_id": { "type": ["string","null"], "format": "uuid" },
+        "raw_payload_ref": { "type": ["string","null"] }
+      }
+    },
+
+    "DataQuality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "missing_fields": { "type": "array", "items": { "type": "string" } },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "AuditStamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at","updated_at","version","record_state"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "created_by": { "type": ["string","null"] },
+        "updated_by": { "type": ["string","null"] },
+        "version": { "type": "integer", "minimum": 1 },
+        "record_state": { "$ref": "#/$defs/RecordState" },
+        "completeness_score": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "data_quality": { "$ref": "#/$defs/DataQuality" }
+      }
+    },
+
+    "Address": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "street": { "type": ["string","null"] },
+        "number": { "type": ["string","null"], "description": "Mascarável conforme ExposureRule" },
+        "complement": { "type": ["string","null"] },
+        "neighborhood_id": { "type": ["string","null"], "format": "uuid" },
+        "neighborhood_raw": { "type": ["string","null"], "description": "Texto original recebido (auditoria)" },
+        "city": { "type": ["string","null"] },
+        "state": { "type": ["string","null"], "minLength": 2, "maxLength": 2, "description": "UF" },
+        "postal_code": { "type": ["string","null"], "description": "CEP" },
+        "country": { "type": "string", "minLength": 2, "maxLength": 2, "default": "BR" },
+        "latitude": { "type": ["number","null"], "minimum": -90, "maximum": 90 },
+        "longitude": { "type": ["number","null"], "minimum": -180, "maximum": 180 },
+        "geo_precision": { "$ref": "#/$defs/GeoPrecision" },
+        "formatted": { "type": ["string","null"] }
+      }
+    },
+
+    "Organization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","name","country","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "legal_name": { "type": ["string","null"] },
+        "tax_id": { "type": ["string","null"], "x-pii": true, "x-sensitivity": "high" },
+        "website_url": { "type": ["string","null"], "format": "uri" },
+        "country": { "type": "string", "minLength": 2, "maxLength": 2, "default": "BR" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "Tenant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","organization_id","name","active","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "organization_id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "data_controller_tenant_id": { "type": ["string","null"], "format": "uuid" },
+        "data_processor_org_id": { "type": ["string","null"], "format": "uuid" },
+        "retention_policy_id": { "type": ["string","null"], "format": "uuid", "description": "FK -> RetentionPolicy.id" },
+        "international_transfer_allowed": { "type": "boolean", "default": false },
+        "active": { "type": "boolean", "default": true },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "User": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","name","roles","active","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "tenant_id": { "type": ["string","null"], "format": "uuid" },
+        "organization_id": { "type": ["string","null"], "format": "uuid" },
+        "name": { "type": "string" },
+        "email": { "type": ["string","null"], "format": "email" },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "active": { "type": "boolean", "default": true },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "Building": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","name","address","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "developer": { "type": ["string","null"] },
+        "address": { "$ref": "#/$defs/Address" },
+        "building_status": { "$ref": "#/$defs/BuildingStatus" },
+        "year_built": { "type": ["integer","null"] },
+        "delivery_date": { "type": ["string","null"], "format": "date" },
+        "floors": { "type": ["integer","null"] },
+        "towers": { "type": ["integer","null"] },
+        "total_units": { "type": ["integer","null"] },
+        "amenities": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": ["string","null"] },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "Unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","property_type","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "building_id": { "type": ["string","null"], "format": "uuid" },
+        "matricula": { "type": ["string","null"], "description": "Chave durável de identidade física" },
+        "dedupe_key": { "type": ["string","null"] },
+        "normalized_address_key": { "type": ["string","null"] },
+        "area_signature": { "type": ["string","null"] },
+        "duplicate_of_unit_id": { "type": ["string","null"], "format": "uuid" },
+        "dedupe_confidence": { "type": ["number","null"], "minimum": 0, "maximum": 1 },
+        "dedupe_review_state": { "$ref": "#/$defs/DedupeReviewState" },
+        "property_type": { "$ref": "#/$defs/PropertyType" },
+        "address": { "$ref": "#/$defs/Address" },
+        "unit_number": { "type": ["string","null"] },
+        "tower": { "type": ["string","null"] },
+        "floor": { "type": ["integer","null"] },
+        "usable_area_m2": { "type": ["number","null"], "minimum": 0 },
+        "total_area_m2": { "type": ["number","null"], "minimum": 0 },
+        "lot_area_m2": { "type": ["number","null"], "minimum": 0 },
+        "bedrooms": { "type": ["integer","null"], "minimum": 0 },
+        "suites": { "type": ["integer","null"], "minimum": 0 },
+        "bathrooms": { "type": ["integer","null"], "minimum": 0 },
+        "parking_spaces": { "type": ["integer","null"], "minimum": 0 },
+        "sun_orientation": { "$ref": "#/$defs/SunOrientation" },
+        "view_type": { "type": ["string","null"] },
+        "ceiling_height_m": { "type": ["number","null"], "minimum": 0 },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "condo_fee": { "$ref": "#/$defs/Money" },
+        "iptu_annual": { "$ref": "#/$defs/Money" },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "PropertyOwnerLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_id"],
+      "properties": {
+        "owner_id": { "type": "string", "format": "uuid" },
+        "ownership_pct": { "type": ["number","null"], "minimum": 0, "maximum": 100 },
+        "owner_role": { "$ref": "#/$defs/OwnerRole" },
+        "is_primary": { "type": "boolean", "default": false }
+      }
+    },
+
+    "PropertyBrokerLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["broker_id"],
+      "properties": {
+        "broker_id": { "type": "string", "format": "uuid" },
+        "broker_role": { "$ref": "#/$defs/BrokerRole" },
+        "is_primary": { "type": "boolean", "default": false },
+        "assigned_at": { "type": ["string","null"], "format": "date-time" }
+      }
+    },
+
+    "Property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","unit_id","transaction_type","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "code": { "type": ["string","null"], "description": "Código MBRAS compatível, ex.: MB18495" },
+        "external_ids": { "type": "array", "items": { "$ref": "#/$defs/ExternalId" } },
+        "unit_id": { "type": "string", "format": "uuid" },
+        "building_id": { "type": ["string","null"], "format": "uuid" },
+        "transaction_type": { "$ref": "#/$defs/TransactionType" },
+        "property_status": { "$ref": "#/$defs/PropertyStatus", "default": "draft" },
+        "availability": { "$ref": "#/$defs/Availability" },
+        "asking_price": { "$ref": "#/$defs/Money" },
+        "min_accepted_price": { "$ref": "#/$defs/Money", "x-pii": true, "x-sensitivity": "high" },
+        "rent_price": { "$ref": "#/$defs/Money" },
+        "exclusive": { "type": "boolean", "default": false },
+        "exclusivity_until": { "type": ["string","null"], "format": "date" },
+        "headline": { "type": ["string","null"] },
+        "summary": { "type": ["string","null"] },
+        "primary_broker_id": { "type": ["string","null"], "format": "uuid" },
+        "published": { "type": "boolean", "default": false },
+        "last_price_change_at": { "type": ["string","null"], "format": "date-time" },
+        "owners": { "type": "array", "items": { "$ref": "#/$defs/PropertyOwnerLink" } },
+        "brokers": { "type": "array", "items": { "$ref": "#/$defs/PropertyBrokerLink" } },
+        "intelligence": { "$ref": "#/$defs/PropertyIntelligence" },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "PropertyIntelligence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "property_id": { "type": ["string","null"], "format": "uuid" },
+        "ideal_buyer_profile": { "type": ["string","null"] },
+        "likely_objections": { "type": "array", "items": { "type": "string" } },
+        "selling_arguments": { "type": "array", "items": { "type": "string" } },
+        "privacy_level": { "type": ["string","null"] },
+        "rarity_score": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "architecture_notes": { "type": ["string","null"] },
+        "view_quality": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "natural_light": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "noise_level": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "liquidity_score": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "match_score": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "defensible_price": { "$ref": "#/$defs/Money" },
+        "off_market_potential": { "type": ["integer","null"], "minimum": 0, "maximum": 100 },
+        "demand_notes": { "type": ["string","null"] },
+        "last_computed_at": { "type": ["string","null"], "format": "date-time" },
+        "computed_by": { "$ref": "#/$defs/ComputedBy" },
+        "confidence": { "type": ["integer","null"], "minimum": 0, "maximum": 100 }
+      }
+    },
+
+    "Listing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","property_id","channel_id","locale","transaction_type","price_display","address_display","listing_status","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "property_id": { "type": "string", "format": "uuid" },
+        "channel_id": { "type": "string", "format": "uuid" },
+        "locale": { "type": "string", "examples": ["pt-BR","en-US"] },
+        "transaction_type": { "$ref": "#/$defs/TransactionType" },
+        "title_public": { "type": ["string","null"] },
+        "title_internal": { "type": ["string","null"] },
+        "description_public": { "type": ["string","null"] },
+        "description_internal": { "type": ["string","null"] },
+        "price_display": { "$ref": "#/$defs/PriceDisplay" },
+        "display_price": { "$ref": "#/$defs/Money" },
+        "address_display": { "$ref": "#/$defs/AddressDisplay" },
+        "media_selection": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+        "listing_status": { "$ref": "#/$defs/ListingStatus" },
+        "exposure_level": { "$ref": "#/$defs/ExposureLevel" },
+        "published_at": { "type": ["string","null"], "format": "date-time" },
+        "expires_at": { "type": ["string","null"], "format": "date-time" },
+        "external_listing_id": { "type": ["string","null"] },
+        "external_url": { "type": ["string","null"], "format": "uri" },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "Owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","owner_type","name","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "owner_type": { "$ref": "#/$defs/OwnerType" },
+        "name": { "type": "string" },
+        "legal_name": { "type": ["string","null"] },
+        "tax_id": { "type": ["string","null"], "description": "CPF/CNPJ — altamente confidencial", "x-pii": true, "x-sensitivity": "high" },
+        "email": { "type": ["string","null"], "format": "email" },
+        "phone": { "type": ["string","null"] },
+        "whatsapp": { "type": ["string","null"] },
+        "address": { "$ref": "#/$defs/Address" },
+        "preferred_contact": { "type": ["string","null"] },
+        "marketing_consent": { "type": "boolean", "default": false },
+        "notes": { "type": ["string","null"] },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "Party": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","party_type","name","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "tenant_id": { "type": ["string","null"], "format": "uuid" },
+        "party_type": { "$ref": "#/$defs/PartyType" },
+        "name": { "type": "string" },
+        "legal_name": { "type": ["string","null"] },
+        "tax_id": { "type": ["string","null"], "x-pii": true, "x-sensitivity": "high" },
+        "email": { "type": ["string","null"], "format": "email" },
+        "phone": { "type": ["string","null"] },
+        "whatsapp": { "type": ["string","null"] },
+        "address": { "$ref": "#/$defs/Address" },
+        "legal_basis": { "type": ["string","null"] },
+        "processing_purpose": { "type": ["string","null"] },
+        "retention_policy_id": { "type": ["string","null"], "format": "uuid", "description": "FK -> RetentionPolicy.id" },
+        "data_subject_request_ids": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "Ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","party_id","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "party_id": { "type": "string", "format": "uuid" },
+        "unit_id": { "type": ["string","null"], "format": "uuid" },
+        "property_id": { "type": ["string","null"], "format": "uuid" },
+        "ownership_pct": { "type": ["number","null"], "minimum": 0, "maximum": 100 },
+        "owner_role": { "$ref": "#/$defs/OwnerRole" },
+        "is_primary": { "type": "boolean", "default": false },
+        "starts_at": { "type": ["string","null"], "format": "date" },
+        "ends_at": { "type": ["string","null"], "format": "date" },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "Broker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","name","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "creci": { "type": ["string","null"] },
+        "email": { "type": ["string","null"], "format": "email" },
+        "phone": { "type": ["string","null"] },
+        "team": { "type": ["string","null"] },
+        "active": { "type": "boolean", "default": true },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "PublicationChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","key","name","channel_type","active"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "key": { "type": "string" },
+        "name": { "type": "string" },
+        "channel_type": { "$ref": "#/$defs/ChannelType" },
+        "config": { "type": "object" },
+        "active": { "type": "boolean", "default": true }
+      }
+    },
+
+    "MediaAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","scope","media_type","media_role","url","provenance","audit"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "scope": { "type": "string", "enum": ["building","unit","property","listing"] },
+        "building_id": { "type": ["string","null"], "format": "uuid" },
+        "unit_id": { "type": ["string","null"], "format": "uuid" },
+        "property_id": { "type": ["string","null"], "format": "uuid" },
+        "media_type": { "$ref": "#/$defs/MediaType" },
+        "media_role": { "$ref": "#/$defs/MediaRole" },
+        "url": { "type": "string", "format": "uri" },
+        "storage_key": { "type": ["string","null"] },
+        "width": { "type": ["integer","null"] },
+        "height": { "type": ["integer","null"] },
+        "duration_s": { "type": ["integer","null"] },
+        "order_index": { "type": ["integer","null"] },
+        "caption": { "type": ["string","null"] },
+        "media_rights": { "$ref": "#/$defs/MediaRights" },
+        "visibility": { "$ref": "#/$defs/ExposureLevel" },
+        "is_cover": { "type": "boolean", "default": false },
+        "checksum": { "type": ["string","null"], "description": "Hash perceptual/MD5 para dedupe" },
+        "ai_tags": { "type": "array", "items": { "type": "string" } },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "audit": { "$ref": "#/$defs/AuditStamp" }
+      }
+    },
+
+    "Document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","document_type","created_at","updated_at","version"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "property_id": { "type": ["string","null"], "format": "uuid" },
+        "unit_id": { "type": ["string","null"], "format": "uuid" },
+        "owner_id": { "type": ["string","null"], "format": "uuid" },
+        "document_type": { "$ref": "#/$defs/DocumentType" },
+        "title": { "type": ["string","null"] },
+        "url": { "type": ["string","null"], "format": "uri" },
+        "storage_key": { "type": ["string","null"] },
+        "confidentiality": { "$ref": "#/$defs/Confidentiality", "default": "sensitive" },
+        "valid_until": { "type": ["string","null"], "format": "date" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "ExposureRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exposure_level"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "property_id": { "type": ["string","null"], "format": "uuid" },
+        "exposure_level": { "$ref": "#/$defs/ExposureLevel" },
+        "field_visibility": {
+          "type": "object",
+          "description": "Mapa campo -> papel mínimo. Ex.: {\"address.number\":\"director\"}",
+          "additionalProperties": { "type": "string" }
+        },
+        "allowed_channels": { "type": "array", "items": { "type": "string" } },
+        "price_display": { "$ref": "#/$defs/PriceDisplay" },
+        "address_display": { "$ref": "#/$defs/AddressDisplay" },
+        "requires_approval": { "type": "boolean", "default": false }
+      }
+    },
+
+    "ExposurePolicyRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effect","actions"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "priority": { "type": "integer", "default": 0, "description": "Maior precedência vence; no topo empatado, deny vence allow." },
+        "effect": { "$ref": "#/$defs/PolicyEffect" },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/PolicyAction" } },
+        "fields": { "type": "array", "items": { "type": "string" } },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "conditions": { "type": "object" },
+        "reason_code": { "type": ["string","null"] }
+      }
+    },
+
+    "ExposurePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","resource_type","exposure_level","default_decision","audit_sensitive_reads","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "tenant_id": { "type": ["string","null"], "format": "uuid" },
+        "resource_type": { "$ref": "#/$defs/PolicyResourceType" },
+        "resource_id": { "type": ["string","null"], "format": "uuid" },
+        "exposure_level": { "$ref": "#/$defs/ExposureLevel" },
+        "rules": { "type": "array", "items": { "$ref": "#/$defs/ExposurePolicyRule" } },
+        "requires_approval_for": { "type": "array", "items": { "$ref": "#/$defs/PolicyAction" } },
+        "allowed_channels": { "type": "array", "items": { "type": "string" } },
+        "default_decision": { "$ref": "#/$defs/PolicyDecision" },
+        "audit_sensitive_reads": { "type": "boolean", "default": true },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "DataSubjectRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","tenant_id","request_type","status","requested_at","due_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "tenant_id": { "type": "string", "format": "uuid" },
+        "party_id": { "type": ["string","null"], "format": "uuid" },
+        "request_type": { "$ref": "#/$defs/DataSubjectRequestType" },
+        "status": { "$ref": "#/$defs/DataSubjectRequestStatus" },
+        "requested_at": { "type": "string", "format": "date-time" },
+        "due_at": { "type": "string", "format": "date-time" },
+        "fulfilled_at": { "type": ["string","null"], "format": "date-time" },
+        "legal_basis": { "type": ["string","null"] },
+        "processing_purpose": { "type": ["string","null"] },
+        "audit_log_ref": { "type": ["string","null"] },
+        "resolution_action": { "anyOf": [ { "$ref": "#/$defs/RetentionAction" }, { "type": "null" } ], "description": "Efeito concreto da resolução (ex.: deletion -> delete|anonymize)." },
+        "affected_record_ids": { "type": "array", "items": { "type": "string", "format": "uuid" }, "description": "Registros efetivamente afetados pela resolução do DSAR." },
+        "notes": { "type": ["string","null"] }
+      }
+    },
+
+    "RetentionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","tenant_id","name","retention_period_days","action_on_expiry","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "tenant_id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "legal_basis": { "type": ["string","null"] },
+        "processing_purpose": { "type": ["string","null"] },
+        "retention_period_days": { "type": "integer", "minimum": 0 },
+        "action_on_expiry": { "$ref": "#/$defs/RetentionAction" },
+        "applies_to": { "type": "array", "items": { "type": "string" }, "description": "Escopos de entidade/campo cobertos. Ex.: [\"party.tax_id\",\"document\"]." },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "ImportSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","name","source_system","source_type","active","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "source_system": { "$ref": "#/$defs/SourceSystem" },
+        "source_type": { "$ref": "#/$defs/ImportSourceType" },
+        "auth_type": { "type": ["string","null"] },
+        "base_url": { "type": ["string","null"], "format": "uri" },
+        "active": { "type": "boolean", "default": true },
+        "last_sync_at": { "type": ["string","null"], "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "ImportBatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","source_id","status"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "source_id": { "type": "string", "format": "uuid" },
+        "status": { "$ref": "#/$defs/ImportBatchStatus" },
+        "file_name": { "type": ["string","null"] },
+        "sync_batch_id": { "type": ["string","null"], "format": "uuid" },
+        "total_rows": { "type": "integer", "minimum": 0, "default": 0 },
+        "valid_rows": { "type": "integer", "minimum": 0, "default": 0 },
+        "invalid_rows": { "type": "integer", "minimum": 0, "default": 0 },
+        "duplicates_found": { "type": "integer", "minimum": 0, "default": 0 },
+        "conflicts_found": { "type": "integer", "minimum": 0, "default": 0 },
+        "started_at": { "type": ["string","null"], "format": "date-time" },
+        "finished_at": { "type": ["string","null"], "format": "date-time" },
+        "report_url": { "type": ["string","null"], "format": "uri" },
+        "created_by": { "type": ["string","null"] }
+      }
+    },
+
+    "ImportMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","source_id","external_field","pibras_field","required","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "source_id": { "type": "string", "format": "uuid" },
+        "external_field": { "type": "string" },
+        "pibras_field": { "type": "string" },
+        "transform_rule": { "type": ["string","null"] },
+        "required": { "type": "boolean", "default": false },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "AuditEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_type","entity_id","change_type","occurred_at"],
+      "properties": {
+        "id": { "type": "integer" },
+        "entity_type": { "type": "string" },
+        "entity_id": { "type": "string", "format": "uuid" },
+        "field": { "type": ["string","null"] },
+        "old_value": {},
+        "new_value": {},
+        "change_type": { "$ref": "#/$defs/AuditChangeType" },
+        "source_system": { "$ref": "#/$defs/SourceSystem" },
+        "trust_tier": { "type": ["integer","null"], "minimum": 1, "maximum": 6 },
+        "actor": { "type": ["string","null"] },
+        "sync_batch_id": { "type": ["string","null"], "format": "uuid" },
+        "occurred_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "ConformanceTestCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","title","version","fixture_path","expected_result"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "version": { "type": "string" },
+        "fixture_path": { "type": "string" },
+        "expected_result": { "type": "string", "enum": ["valid","invalid"] },
+        "applies_to": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "Neighborhood": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","canonical_name"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "canonical_name": { "type": "string" },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "city": { "type": ["string","null"] },
+        "state": { "type": ["string","null"], "minLength": 2, "maxLength": 2 },
+        "zone": { "type": ["string","null"] },
+        "centroid_lat": { "type": ["number","null"] },
+        "centroid_lng": { "type": ["number","null"] },
+        "polygon": { "description": "GeoJSON Polygon", "type": ["object","null"] },
+        "demand_index": { "type": ["number","null"] },
+        "avg_price_m2": { "$ref": "#/$defs/Money" }
+      }
+    },
+
+    "Geography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","canonical_name","geography_type"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "geography_type": { "$ref": "#/$defs/GeographyType" },
+        "parent_id": { "type": ["string","null"], "format": "uuid" },
+        "canonical_name": { "type": "string" },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "city": { "type": ["string","null"] },
+        "state": { "type": ["string","null"], "minLength": 2, "maxLength": 2 },
+        "zone": { "type": ["string","null"] },
+        "centroid_lat": { "type": ["number","null"] },
+        "centroid_lng": { "type": ["number","null"] },
+        "polygon": { "description": "GeoJSON Polygon", "type": ["object","null"] },
+        "demand_index": { "type": ["number","null"] },
+        "avg_price_m2": { "$ref": "#/$defs/Money" }
+      }
+    }
+  }
+}

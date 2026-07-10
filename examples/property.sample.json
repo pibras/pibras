@@ -1,0 +1,82 @@
+{
+  "id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+  "code": "MB18495",
+  "external_ids": [
+    {
+      "namespace": "mbras",
+      "key": "property_code",
+      "value": "MB18495"
+    }
+  ],
+  "unit_id": "3f1c9a02-5e44-4b7c-9d18-2a6b8e0f1c33",
+  "building_id": "a7d4e210-8c63-4f91-b052-6e9a1d7c4b88",
+  "transaction_type": "sale",
+  "property_status": "available",
+  "availability": "available",
+  "asking_price": { "amount": 1750000000, "currency": "BRL" },
+  "min_accepted_price": { "amount": 1650000000, "currency": "BRL" },
+  "exclusive": true,
+  "exclusivity_until": "2026-12-31",
+  "headline": "Cobertura duplex no Itaim — 740 m², 4 suítes, 6 vagas",
+  "summary": "Cobertura de altíssimo padrão com vista permanente e exposição off-market controlada.",
+  "primary_broker_id": "c4b8f0a1-2d3e-4a5b-9c6d-7e8f0a1b2c3d",
+  "published": true,
+  "last_price_change_at": "2026-06-18T13:00:00Z",
+  "owners": [
+    {
+      "owner_id": "d5e6f7a8-9b0c-4d1e-8f2a-3b4c5d6e7f80",
+      "ownership_pct": 100,
+      "owner_role": "owner",
+      "is_primary": true
+    }
+  ],
+  "brokers": [
+    {
+      "broker_id": "c4b8f0a1-2d3e-4a5b-9c6d-7e8f0a1b2c3d",
+      "broker_role": "listing",
+      "is_primary": true,
+      "assigned_at": "2026-05-02T10:00:00Z"
+    }
+  ],
+  "intelligence": {
+    "property_id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+    "ideal_buyer_profile": "Família de altíssima renda buscando privacidade e metragem ampla no Itaim/Jardins.",
+    "likely_objections": ["Valor de condomínio elevado", "Poucas unidades comparáveis para referência de preço"],
+    "selling_arguments": ["Vista permanente protegida", "Andar exclusivo", "6 vagas demarcadas"],
+    "privacy_level": "alto",
+    "rarity_score": 92,
+    "architecture_notes": "Projeto assinado, pé-direito duplo no living.",
+    "view_quality": 95,
+    "natural_light": 88,
+    "noise_level": 80,
+    "liquidity_score": 64,
+    "match_score": 71,
+    "defensible_price": { "amount": 1700000000, "currency": "BRL" },
+    "off_market_potential": 85,
+    "demand_notes": "Demanda consistente por coberturas 4 suítes no Itaim nos últimos 12 meses.",
+    "last_computed_at": "2026-06-17T22:00:00Z",
+    "computed_by": "hermes",
+    "confidence": 78
+  },
+  "provenance": {
+    "source_system": "mbras_internal",
+    "source_record_id": "MB18495",
+    "trust_tier": 2,
+    "ingested_at": "2026-05-02T09:30:00Z",
+    "ingested_by": "curadoria",
+    "sync_batch_id": "11111111-2222-3333-4444-555555555555"
+  },
+  "audit": {
+    "created_at": "2026-05-02T09:30:00Z",
+    "updated_at": "2026-06-18T13:00:00Z",
+    "created_by": "curadoria",
+    "updated_by": "broker_x",
+    "version": 7,
+    "record_state": "active",
+    "completeness_score": 84,
+    "data_quality": {
+      "missing_fields": ["floor_plan", "video", "exposure_rule"],
+      "warnings": ["condo_fee ausente na Unit"]
+    }
+  }
+}

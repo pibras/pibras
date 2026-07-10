@@ -1,0 +1,15 @@
+{
+  "id": "unit-dedupe-candidate-review-band",
+  "entity_level": "unit",
+  "candidate_a": "3f1c9a02-5e44-4b7c-9d18-2a6b8e0f1c33",
+  "candidate_b": "22222222-2222-4222-8222-222222222222",
+  "score": 0.82,
+  "matched_features": ["normalized_address_key", "usable_area_m2"],
+  "missing_features": ["matricula", "floor"],
+  "decision": "needs_review",
+  "thresholds": {
+    "auto_merge": 0.95,
+    "manual_review_min": 0.75
+  },
+  "expected_result": "valid"
+}

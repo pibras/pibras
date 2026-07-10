@@ -1,0 +1,19 @@
+{
+  "id": "data-subject-request-valid",
+  "schema_ref": "#/$defs/DataSubjectRequest",
+  "expected_result": "valid",
+  "payload": {
+    "id": "44444444-4444-4444-8444-444444444444",
+    "tenant_id": "33333333-3333-4333-8333-333333333333",
+    "party_id": "55555555-5555-4555-8555-555555555555",
+    "request_type": "access",
+    "status": "received",
+    "requested_at": "2026-06-19T12:00:00Z",
+    "due_at": "2026-07-04T12:00:00Z",
+    "fulfilled_at": null,
+    "legal_basis": "legitimate_interest",
+    "processing_purpose": "portfolio_management",
+    "audit_log_ref": null,
+    "notes": "Solicitação recebida pelo canal de privacidade."
+  }
+}

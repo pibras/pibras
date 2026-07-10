@@ -1,0 +1,6 @@
+{
+  "plan_path": "docs/plans/pibras-10-of-10-public-standard.md",
+  "sha256": "3d9535f095831cb23a8c2b00df18f098889a3b89d3c6c484029811579df88368",
+  "locked_at": "2026-07-10T03:10:00Z",
+  "immutability": "The tracked plan is approved input. It is never edited. If the plan needs correction, work stops BLOCKED and the owner must approve a new versioned plan path and lock hash, followed by a restarted dual high-accuracy review."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "unit-dedupe-candidate-high-confidence",
+  "entity_level": "unit",
+  "candidate_a": "3f1c9a02-5e44-4b7c-9d18-2a6b8e0f1c33",
+  "candidate_b": "11111111-1111-4111-8111-111111111111",
+  "score": 0.97,
+  "matched_features": [
+    "matricula",
+    "normalized_address_key",
+    "usable_area_m2",
+    "floor"
+  ],
+  "missing_features": [],
+  "decision": "auto_merge",
+  "thresholds": {
+    "auto_merge": 0.95,
+    "manual_review_min": 0.75
+  },
+  "expected_result": "valid"
+}

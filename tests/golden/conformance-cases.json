@@ -1,0 +1,114 @@
+[
+  {
+    "id": "property-valid-v02-compatible",
+    "title": "Property accepts v0.2 external_ids while keeping code compatibility",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/property.valid.json",
+    "expected_result": "valid",
+    "applies_to": ["schema", "types"]
+  },
+  {
+    "id": "property-invalid-money-brl-scalar",
+    "title": "Property rejects _brl scalar money shape",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/property.invalid-money.json",
+    "expected_result": "invalid",
+    "applies_to": ["schema", "types"]
+  },
+  {
+    "id": "listing-public-masked-address",
+    "title": "Public listing projection masks sensitive address fields",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/listing.public-masked.json",
+    "expected_result": "valid",
+    "applies_to": ["policy", "listing"]
+  },
+  {
+    "id": "portal-feed-valid-xml",
+    "title": "Portal feed can be generated from canonical values",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/portal-feed.valid.xml",
+    "expected_result": "valid",
+    "applies_to": ["portal-feed"]
+  },
+  {
+    "id": "import-row-pending-change",
+    "title": "Import row creates pending change when lower trust source conflicts",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/import-row.pending-change.json",
+    "expected_result": "valid",
+    "applies_to": ["import", "ingestion", "db"]
+  },
+  {
+    "id": "money-centavos-brl",
+    "title": "Money uses minor units plus explicit currency",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/money.centavos.expected.json",
+    "expected_result": "valid",
+    "applies_to": ["schema", "types", "docs"]
+  },
+  {
+    "id": "exposure-policy-confidential-default-deny",
+    "title": "ExposurePolicy denies sensitive fields by default",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/exposure-policy.default-deny.json",
+    "expected_result": "valid",
+    "applies_to": ["schema", "types", "policy"]
+  },
+  {
+    "id": "unit-dedupe-candidate-high-confidence",
+    "title": "Unit is the dedupe anchor",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/unit.duplicate-candidate.json",
+    "expected_result": "valid",
+    "applies_to": ["dedupe", "db", "docs"]
+  },
+  {
+    "id": "external-source-cannot-overwrite-trusted-price",
+    "title": "Lower trust external source becomes pending change",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/pending-change.external-overwrite.json",
+    "expected_result": "valid",
+    "applies_to": ["db", "ingestion", "docs"]
+  },
+  {
+    "id": "data-subject-request-valid",
+    "title": "DSAR has tenant, status, deadline, and audit context",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/data-subject-request.valid.json",
+    "expected_result": "valid",
+    "applies_to": ["schema", "types", "lgpd"]
+  },
+  {
+    "id": "retention-policy-valid",
+    "title": "RetentionPolicy declares retention period and action on expiry",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/retention-policy.valid.json",
+    "expected_result": "valid",
+    "applies_to": ["schema", "types", "lgpd"]
+  },
+  {
+    "id": "data-subject-request-deletion-fulfilled",
+    "title": "DSAR deletion records a concrete resolution effect",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/data-subject-request.deletion-fulfilled.json",
+    "expected_result": "valid",
+    "applies_to": ["schema", "types", "lgpd"]
+  },
+  {
+    "id": "external-source-cannot-overwrite-owner-pii",
+    "title": "External source cannot overwrite owner PII without review",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/pending-change.owner-pii-protected.json",
+    "expected_result": "valid",
+    "applies_to": ["db", "ingestion", "lgpd", "docs"]
+  },
+  {
+    "id": "unit-dedupe-candidate-review-band",
+    "title": "Dedupe score in the review band requires manual review",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/unit.dedupe-review-band.json",
+    "expected_result": "valid",
+    "applies_to": ["dedupe", "db", "docs"]
+  }
+]

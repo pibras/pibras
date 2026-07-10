@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Listings>
+  <Listing>
+    <ExternalId namespace="mbras" key="property_code">MB18495</ExternalId>
+    <TransactionType>sale</TransactionType>
+    <Title>Cobertura duplex no Itaim</Title>
+    <PriceDisplay>on_request</PriceDisplay>
+    <AddressDisplay>approximate</AddressDisplay>
+    <Neighborhood>Itaim Bibi</Neighborhood>
+  </Listing>
+</Listings>

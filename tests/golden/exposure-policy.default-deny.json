@@ -1,0 +1,85 @@
+{
+  "id": "exposure-policy-confidential-default-deny",
+  "schema_ref": "#/$defs/ExposurePolicy",
+  "expected_result": "valid",
+  "payload": {
+    "id": "22222222-2222-4222-8222-222222222222",
+    "tenant_id": "33333333-3333-4333-8333-333333333333",
+    "resource_type": "property",
+    "resource_id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+    "exposure_level": "confidential",
+    "rules": [
+      {
+        "effect": "allow",
+        "actions": ["read"],
+        "fields": ["address.street"],
+        "roles": ["broker"],
+        "conditions": {
+          "broker_is_assigned": true
+        },
+        "reason_code": "assigned_broker_street_access"
+      },
+      {
+        "effect": "deny",
+        "actions": ["read", "export"],
+        "fields": ["address.number", "owner.tax_id"],
+        "roles": [],
+        "conditions": {},
+        "reason_code": "sensitive_field_default_deny"
+      },
+      {
+        "effect": "allow",
+        "actions": ["read"],
+        "fields": ["owner.tax_id"],
+        "roles": ["director"],
+        "conditions": {},
+        "priority": 10,
+        "reason_code": "director_pii_access"
+      }
+    ],
+    "requires_approval_for": ["export", "send"],
+    "allowed_channels": ["crm", "off_market_pdf"],
+    "default_decision": "deny",
+    "audit_sensitive_reads": true,
+    "created_at": "2026-06-19T12:00:00Z",
+    "updated_at": "2026-06-19T12:00:00Z"
+  },
+  "expected_decisions": [
+    {
+      "subject_role": "public",
+      "action": "read",
+      "field": "address.number",
+      "decision": "deny",
+      "reason_code": "sensitive_field_default_deny"
+    },
+    {
+      "subject_role": "broker",
+      "action": "read",
+      "field": "address.street",
+      "decision": "allow",
+      "reason_code": "assigned_broker_street_access"
+    },
+    {
+      "subject_role": "portal",
+      "action": "export",
+      "field": "owner.tax_id",
+      "decision": "deny",
+      "reason_code": "sensitive_field_default_deny"
+    },
+    {
+      "subject_role": "director",
+      "action": "read",
+      "field": "owner.tax_id",
+      "decision": "allow",
+      "reason_code": "director_pii_access"
+    },
+    {
+      "subject_role": "public",
+      "action": "read",
+      "field": "headline",
+      "decision": "deny",
+      "reason_code": "default_decision"
+    }
+  ],
+  "policy_expectation": "deny explicit wins and sensitive fields deny by default"
+}

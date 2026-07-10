@@ -1,0 +1,35 @@
+{
+  "id": "listing-public-masked-address",
+  "schema_ref": "#/$defs/Listing",
+  "expected_result": "valid",
+  "payload": {
+    "id": "66666666-6666-4666-8666-666666666666",
+    "property_id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+    "channel_id": "77777777-7777-4777-8777-777777777777",
+    "locale": "pt-BR",
+    "transaction_type": "sale",
+    "title_public": "Cobertura duplex no Itaim",
+    "description_public": "Texto público aprovado.",
+    "price_display": "on_request",
+    "address_display": "approximate",
+    "listing_status": "published",
+    "exposure_level": "restricted",
+    "provenance": {
+      "source_system": "mbras_internal",
+      "trust_tier": 2,
+      "ingested_at": "2026-06-19T12:00:00Z"
+    },
+    "audit": {
+      "created_at": "2026-06-19T12:00:00Z",
+      "updated_at": "2026-06-19T12:00:00Z",
+      "version": 1,
+      "record_state": "active"
+    }
+  },
+  "projection_expectation": {
+    "address.street": null,
+    "address.number": null,
+    "price": "Sob consulta",
+    "neighborhood": "Itaim Bibi"
+  }
+}

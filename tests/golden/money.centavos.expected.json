@@ -1,0 +1,11 @@
+{
+  "id": "money-centavos-brl",
+  "schema_ref": "#/$defs/Money",
+  "expected_result": "valid",
+  "title": "Money uses minor units plus explicit currency",
+  "payload": {
+    "amount": 1750000000,
+    "currency": "BRL"
+  },
+  "represents": "R$ 17.500.000,00"
+}

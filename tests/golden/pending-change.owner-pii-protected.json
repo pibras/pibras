@@ -1,0 +1,18 @@
+{
+  "id": "external-source-cannot-overwrite-owner-pii",
+  "entity_type": "party",
+  "entity_id": "55555555-5555-4555-8555-555555555555",
+  "field_class": "pii",
+  "current_snapshot": {
+    "tax_id": "<redacted-proprietary-pii>",
+    "trust_tier": 1
+  },
+  "proposed": {
+    "tax_id": "00000000000"
+  },
+  "source_system": "xml_generic",
+  "trust_tier": 5,
+  "expected_state": "pending_review",
+  "expected_reason": "external_source_cannot_write_pii_without_review",
+  "expected_result": "valid"
+}

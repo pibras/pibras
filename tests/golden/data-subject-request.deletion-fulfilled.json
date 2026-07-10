@@ -1,0 +1,21 @@
+{
+  "id": "data-subject-request-deletion-fulfilled",
+  "schema_ref": "#/$defs/DataSubjectRequest",
+  "expected_result": "valid",
+  "payload": {
+    "id": "99999999-9999-4999-8999-999999999999",
+    "tenant_id": "33333333-3333-4333-8333-333333333333",
+    "party_id": "55555555-5555-4555-8555-555555555555",
+    "request_type": "deletion",
+    "status": "fulfilled",
+    "requested_at": "2026-06-19T12:00:00Z",
+    "due_at": "2026-07-04T12:00:00Z",
+    "fulfilled_at": "2026-06-25T09:30:00Z",
+    "legal_basis": "consent_withdrawn",
+    "processing_purpose": "portfolio_management",
+    "audit_log_ref": "auditlog:dsar:99999999",
+    "resolution_action": "anonymize",
+    "affected_record_ids": ["55555555-5555-4555-8555-555555555555"],
+    "notes": "Dados do titular anonimizados conforme RetentionPolicy aplicável."
+  }
+}

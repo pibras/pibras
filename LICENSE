@@ -1,0 +1,8 @@
+License decision pending.
+
+Recommended split before public release:
+
+- Code, schemas, SDKs, and validators: Apache-2.0.
+- Documentation and specification text: CC BY 4.0.
+
+Do not publish this repository as an open standard until the final license files are approved.

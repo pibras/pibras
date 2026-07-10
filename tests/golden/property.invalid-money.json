@@ -1,0 +1,25 @@
+{
+  "id": "property-invalid-money-brl-scalar",
+  "schema_ref": "#/$defs/Property",
+  "reason": "Money must use amount plus currency, not a _brl scalar field.",
+  "payload": {
+    "id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+    "code": "MB18495",
+    "unit_id": "3f1c9a02-5e44-4b7c-9d18-2a6b8e0f1c33",
+    "transaction_type": "sale",
+    "property_status": "available",
+    "asking_price_brl": 17500000,
+    "provenance": {
+      "source_system": "mbras_internal",
+      "trust_tier": 2,
+      "ingested_at": "2026-05-02T09:30:00Z"
+    },
+    "audit": {
+      "created_at": "2026-05-02T09:30:00Z",
+      "updated_at": "2026-06-18T13:00:00Z",
+      "version": 1,
+      "record_state": "active"
+    }
+  },
+  "expected_result": "invalid"
+}

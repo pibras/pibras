@@ -1,0 +1,23 @@
+{
+  "id": "external-source-cannot-overwrite-trusted-price",
+  "entity_type": "property",
+  "entity_id": "9b2e7c84-1d3a-4f6b-8a21-7c0f5e9d4a11",
+  "current_snapshot": {
+    "asking_price": {
+      "amount": 1750000000,
+      "currency": "BRL"
+    },
+    "trust_tier": 2
+  },
+  "proposed": {
+    "asking_price": {
+      "amount": 1600000000,
+      "currency": "BRL"
+    }
+  },
+  "source_system": "xml_generic",
+  "trust_tier": 5,
+  "expected_state": "pending_review",
+  "expected_reason": "lower_trust_source_requires_review",
+  "expected_result": "valid"
+}

@@ -1,0 +1,155 @@
+openapi: 3.1.0
+info:
+  title: PIBRAS Reference API
+  version: 0.2-draft
+  summary: API mínima de referência para implementações compatíveis com PIBRAS.
+  description: >
+    Este contrato define a superfície mínima esperada para uma implementação
+    compatível: leitura de unidades, imóveis, listings, política de exposição
+    e catálogo de casos de conformidade.
+servers:
+  - url: https://api.pibras.org/v0
+    description: URL ilustrativa para implementações de referência.
+tags:
+  - name: Units
+  - name: Properties
+  - name: Listings
+  - name: ExposurePolicy
+  - name: Conformance
+paths:
+  /units/{unit_id}:
+    get:
+      tags: [Units]
+      operationId: getUnit
+      summary: Recupera uma unidade física durável.
+      parameters:
+        - $ref: "#/components/parameters/UnitId"
+      responses:
+        "200":
+          $ref: "#/components/responses/UnitResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /properties/{property_id}:
+    get:
+      tags: [Properties]
+      operationId: getProperty
+      summary: Recupera um ciclo comercial de imóvel.
+      parameters:
+        - $ref: "#/components/parameters/PropertyId"
+      responses:
+        "200":
+          $ref: "#/components/responses/PropertyResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /listings/{listing_id}:
+    get:
+      tags: [Listings]
+      operationId: getListing
+      summary: Recupera uma exposição por canal.
+      parameters:
+        - $ref: "#/components/parameters/ListingId"
+      responses:
+        "200":
+          $ref: "#/components/responses/ListingResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /properties/{property_id}/exposure-policy:
+    get:
+      tags: [ExposurePolicy]
+      operationId: getPropertyExposurePolicy
+      summary: Recupera a política de exposição vigente para um imóvel.
+      parameters:
+        - $ref: "#/components/parameters/PropertyId"
+      responses:
+        "200":
+          $ref: "#/components/responses/ExposurePolicyResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /conformance/cases:
+    get:
+      tags: [Conformance]
+      operationId: listConformanceCases
+      summary: Lista os casos golden que uma implementação compatível deve executar.
+      responses:
+        "200":
+          description: Casos de conformidade publicados pelo padrão.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConformanceTestCase"
+components:
+  parameters:
+    UnitId:
+      name: unit_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PropertyId:
+      name: property_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ListingId:
+      name: listing_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    Unit:
+      $ref: "./schema/mbras.schema.json#/$defs/Unit"
+    Property:
+      $ref: "./schema/mbras.schema.json#/$defs/Property"
+    Listing:
+      $ref: "./schema/mbras.schema.json#/$defs/Listing"
+    ExposurePolicy:
+      $ref: "./schema/mbras.schema.json#/$defs/ExposurePolicy"
+    ConformanceTestCase:
+      $ref: "./schema/mbras.schema.json#/$defs/ConformanceTestCase"
+    Error:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+  responses:
+    UnitResponse:
+      description: Unidade física durável.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Unit"
+    PropertyResponse:
+      description: Ciclo comercial de imóvel.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Property"
+    ListingResponse:
+      description: Exposição por canal.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Listing"
+    ExposurePolicyResponse:
+      description: Política de exposição do recurso.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ExposurePolicy"
+    ErrorResponse:
+      description: Erro padronizado da API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
