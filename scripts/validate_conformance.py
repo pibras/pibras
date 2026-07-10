@@ -1,18 +1,19 @@
 #!/usr/bin/env -S uv run --script
 # /// script
-# requires-python = ">=3.13"
+# requires-python = "==3.13.9"
 # dependencies = [
-#     "jsonschema[format]",
+#     "jsonschema[format]==4.26.0",
 # ]
 # ///
 
-# How to run
-# 1. Install uv (if not installed):
+# ─── How to run ───
+# 1. Install uv 0.9.7 (if not installed):
 #      curl -LsSf https://astral.sh/uv/install.sh | sh
 # 2. Run directly (no venv, no pip install needed):
 #      uv run scripts/validate_conformance.py
 # 3. Or make executable and run:
 #      chmod +x scripts/validate_conformance.py && ./scripts/validate_conformance.py
+# ──────────────────
 
 from __future__ import annotations
 
