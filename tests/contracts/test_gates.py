@@ -120,14 +120,20 @@ class TestPreReconciliationExpectedRed:
         assert report["blocking_count"] == len(blocking_non_identity)
 
 
-class TestRealContractsExpectedRed:
-    """Direct target checks against the real repo contracts: expected red."""
+class TestRealContractsGreen:
+    """Direct target checks against the real repo contracts.
 
-    def test_real_parity_is_red_with_known_ids(self) -> None:
+    Red before reconciliation (Todo 4); green as of the v0.2 reconciliation
+    (Todo 5). The historical expected-red IDs remain pinned in
+    tests/contracts/expected-red-manifest.json for the frozen
+    pre-reconciliation fixtures above.
+    """
+
+    def test_real_parity_is_green(self) -> None:
         code, report = run_checker(PARITY, "--root", str(REPO_ROOT))
-        assert code == 1, "real contracts are expected red until reconciled"
-        got = [f["id"] for f in report["findings"]]
-        assert got == expected_ids("contract-parity")
+        assert code == 0, report
+        assert report["status"] == "green"
+        assert report["findings"] == []
 
 
 if __name__ == "__main__":

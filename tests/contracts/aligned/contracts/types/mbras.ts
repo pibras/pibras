@@ -20,5 +20,5 @@ export const AuditEvent = z.object({
 export const ExposureRule = z.object({
   id: z.string().uuid(),
   exposure_level: z.enum(["public", "restricted", "private"]),
-  field_visibility: z.record(z.unknown()).default({}),
+  field_visibility: z.record(z.string(), z.unknown()).default({}),
 });

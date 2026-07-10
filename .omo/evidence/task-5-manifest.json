@@ -1,0 +1,68 @@
+{
+  "todo_id": 5,
+  "status": "completed",
+  "recorded_at": "2026-07-10T16:36:35.691460+00:00",
+  "commit": "93ebc38a44311cdb242005e7b0d03b7ad89db093",
+  "artifacts": [
+    {
+      "path": "docs/migrations/v0.1.0-to-v0.2.md",
+      "sha256": "b3cadccbba870fa5232b6dbea8b84cad9d888496d6236e97e7aa95862217741f",
+      "bundle": true
+    },
+    {
+      "path": "mappings/v0.1.0-code-to-v0.2.md",
+      "sha256": "20c13dad7013928ff76085c2052104a4458564fa5c1c25bf4e70f676a3bbdbab",
+      "bundle": true
+    },
+    {
+      "path": "db/schema.sql",
+      "sha256": "310ea1c2dcade4bdc20c57927ee2f56e38a9c696406ec2ab0f0ed3bb4d126ddb",
+      "bundle": true
+    },
+    {
+      "path": "schema/mbras.schema.json",
+      "sha256": "297f9e9017b03ead0a5732eac5d88a9c0281d7ebd406b817496dcd39f3fdf41a",
+      "bundle": true
+    },
+    {
+      "path": "types/mbras.ts",
+      "sha256": "3c32b135653efcf3e968ffc2d972a31f3ae949406f38e8cc3f296f495daa2b62",
+      "bundle": true
+    },
+    {
+      "path": "tests/contracts/test_gates.py",
+      "sha256": "becba44a9fc6096b30cca580b8ddf0eb1a20e57caec3df2488a43ad295d9a25c",
+      "bundle": true
+    },
+    {
+      "path": "tests/contracts/aligned/contracts/types/mbras.ts",
+      "sha256": "e1a8039d58c84fc4658e043f7d3fd71e85ec966a12acbaf0fde186a423430407",
+      "bundle": true
+    },
+    {
+      "path": "tests/contracts/pre-reconciliation/contracts/types/mbras.ts",
+      "sha256": "d62d608f448f6c1f62fdd41fde6242078a1b3a4e08d2619c7c1a4a081cbe6fca",
+      "bundle": true
+    },
+    {
+      "path": "scripts/qa/task-4.sh",
+      "sha256": "3ef0217dbbf98c9a3bf542dc4085042794597049b55aa669eb7c109289f99bf6",
+      "bundle": true
+    },
+    {
+      "path": "scripts/qa/task-5.sh",
+      "sha256": "0e344378094a73c59caabf33479242cc6508aa311b89ab01417731c6d3e76114",
+      "bundle": true
+    },
+    {
+      "path": ".omo/evidence/task-5-commands.log",
+      "sha256": "56778c1bb60b03163d96b14ead6d88a28ba3f0b1fdf8e55c48c2ee7b8a08ce60",
+      "bundle": true
+    },
+    {
+      "path": ".omo/evidence/task-5-qa-summary.json",
+      "sha256": "de20b1494f9f8447a14b7407eecf07094da26e1dbfa22374cc34d0cba72b51a6",
+      "bundle": true
+    }
+  ]
+}

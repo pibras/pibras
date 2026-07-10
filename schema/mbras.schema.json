@@ -615,7 +615,8 @@
         "field_visibility": {
           "type": "object",
           "description": "Mapa campo -> papel mínimo. Ex.: {\"address.number\":\"director\"}",
-          "additionalProperties": { "type": "string" }
+          "additionalProperties": { "type": "string" },
+          "default": {}
         },
         "allowed_channels": { "type": "array", "items": { "type": "string" } },
         "price_display": { "$ref": "#/$defs/PriceDisplay" },

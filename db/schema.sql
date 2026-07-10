@@ -20,6 +20,7 @@ SET search_path TO mbras, public;
 -- Enums canônicos
 -- ---------------------------------------------------------------------
 CREATE TYPE source_system   AS ENUM ('mbras_internal','twenty_crm','kenlo','vista','jetimob','imobzi','tecimob','orulo','zap_vivareal','olx','xml_generic','csv_import','excel_import','manual','other');
+CREATE TYPE audit_change_type AS ENUM ('insert','update','delete');
 CREATE TYPE record_state    AS ENUM ('draft','pending_review','active','conflict','duplicate','rejected','archived');
 CREATE TYPE property_type   AS ENUM ('apartment','penthouse','house','house_condo','studio','loft','flat','land','farm','commercial_room','commercial_building','warehouse','hotel','whole_building','other');
 CREATE TYPE transaction_type AS ENUM ('sale','rent','sale_rent','season_rent');
@@ -848,9 +849,9 @@ CREATE TABLE audit_log (
   field         TEXT,
   old_value     JSONB,
   new_value     JSONB,
-  change_type   TEXT,                     -- insert | update | delete
+  change_type   audit_change_type NOT NULL,
   source_system source_system,
-  trust_tier    SMALLINT,
+  trust_tier    SMALLINT CHECK (trust_tier BETWEEN 1 AND 6),
   actor         TEXT,
   sync_batch_id UUID,
   occurred_at   TIMESTAMPTZ NOT NULL DEFAULT now()

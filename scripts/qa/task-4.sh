@@ -69,8 +69,9 @@ run_ok "invariants-aligned-green" uv run scripts/check_domain_invariants.py --en
 run_shell_fails "parity-frozen-expected-red" "uv run scripts/check_contract_parity.py --root tests/contracts/pre-reconciliation/contracts"
 run_shell_fails "invariants-frozen-expected-red" "uv run scripts/check_domain_invariants.py --entities tests/contracts/pre-reconciliation/entities"
 
-# Direct target checks against the REAL repo contracts: expected red.
-run_shell_fails "parity-real-expected-red" "uv run scripts/check_contract_parity.py --root ."
+# Direct target checks against the REAL repo contracts: green as of the
+# v0.2 reconciliation (Todo 5); they were expected red before it.
+run_ok "parity-real-green" uv run scripts/check_contract_parity.py --root .
 
 # Harness: pytest must exit 0 even though targets are red (red-first).
 run_ok "pytest-gates" uv run pytest tests/contracts/test_gates.py -q
@@ -90,7 +91,7 @@ STATUS=completed
   printf '  "qa_scenarios": [\n'
   printf '    "aligned synthetic fixtures green",\n'
   printf '    "frozen pre-reconciliation fixtures expected red",\n'
-  printf '    "real repo contracts expected red",\n'
+  printf '    "real repo contracts green after Todo 5 reconciliation",\n'
   printf '    "pytest harness exits 0 with exact expected finding IDs",\n'
   printf '    "identity rules excluded from blocking and manifest",\n'
   printf '    "existing validators unaffected"\n'
