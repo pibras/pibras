@@ -14,7 +14,7 @@
 | Versão | Status | Arquivos |
 |---|---|---|
 | v0.1 | Fundador / histórico | `docs/PIBRAS-STANDARD-v0.1.md` |
-| v0.1.0 | Baseline técnica atual | `docs/MBRAS-PROPERTY-STANDARD.md`, `schema/mbras.schema.json`, `types/mbras.ts`, `db/schema.sql`, `examples/property.sample.json` |
+| v0.1.0 | Baseline técnica atual | `docs/PROPERTY-STANDARD-v0.1.md`, `schema/mbras.schema.json`, `types/mbras.ts`, `db/schema.sql`, `examples/property.sample.json` |
 | v0.2 | Draft de reconciliação | `docs/PIBRAS-STANDARD-v0.2-draft.md`, `mappings/v0.1.0-code-to-v0.2.md`, `openapi.yaml` |
 
 ## Regra de promoção

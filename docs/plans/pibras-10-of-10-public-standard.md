@@ -6,7 +6,7 @@
 
 **What you'll get:** A neutral, versioned, reproducible PIBRAS public standard whose domain contracts, database model, API definition, privacy rules, governance, licenses, and release artifacts are all executable and independently verifiable. The result culminates in a signed v1.0.0 release bundle rather than a documentation-only claim.
 
-**Why this approach:** Repository and public identity foundations come first so later parity tests do not freeze temporary MBRAS-branded assumptions. Tests are added before reconciliation, and the exact same aggregate gate runs locally, in CI, and against the packaged release.
+**Why this approach:** Repository and public identity foundations come first so later parity tests do not freeze temporary sponsor-branded assumptions. Tests are added before reconciliation, and the exact same aggregate gate runs locally, in CI, and against the packaged release.
 
 **What it will NOT do:** It will not build a CRM, UI, hosted API, ingestion platform, or production database. It will not silently treat experimental roadmap entities as stable, and it will not publish until neutral identity, legal licensing, maintainer RFC, and signing approvals are real.
 
@@ -35,7 +35,7 @@ Your next move: choose whether to start execution or run the optional dual high-
 ### Must NOT have (guardrails, anti-slop, scope boundaries)
 - No hosted production API, CRM, UI, ingestion service, cloud database, business-data migration, SDK family, or deployment platform.
 - Do not delete experimental commercial/intelligence tables merely because they remain outside v1 conformance.
-- Do not publish, tag v1.0.0, add public license claims, or configure an MBRAS-branded public schema root before the corresponding external approval gates pass.
+- Do not publish, tag v1.0.0, add public license claims, or configure a sponsor-branded public schema root before the corresponding external approval gates pass.
 - Do not use bare `python3 scripts/validate_*.py`; PEP 723 validators run through `uv run`.
 - Do not duplicate CI logic in YAML; CI invokes `scripts/check_all.sh`.
 - Do not weaken validators or fixtures to make parity pass.

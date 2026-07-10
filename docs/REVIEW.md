@@ -1,5 +1,8 @@
 # PIBRAS — Revisão de Consistência e Potencial de Melhoria
 
+> Status: historical and non-authoritative
+
+
 > Revisão multi-agente da pasta completa. Escopo: inconsistências e oportunidades de melhoria.
 > Status: **somente diagnóstico** — nenhum artefato do padrão foi alterado.
 > Data: 2026-06-21 · Método: 4 agentes paralelos (schema/tipos/DDL · docs/governança · conformidade · arquitetura), com validação real (`jsonschema` Draft 2020-12 + `xmllint`) no corpus.

@@ -1,5 +1,8 @@
 # PIBRAS — Re-revisão (verificação das correções)
 
+> Status: historical and non-authoritative
+
+
 > Follow-up de [`docs/REVIEW.md`](REVIEW.md), após as correções executáveis (runner, fixtures, contrato, docs).
 > Status: **somente verificação** — nenhum arquivo do padrão foi alterado nesta revisão.
 > Data: 2026-06-21 · Método: 3 agentes paralelos + verificação independente por execução real.

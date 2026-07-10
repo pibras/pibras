@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://standard.mbras.com.br/schema/mbras.schema.json",
-  "title": "Padrão MBRAS de Dados Imobiliários",
-  "description": "Modelo canônico do MBRAS Property Inventory Hub. Consuma entidades via $ref, ex.: mbras.schema.json#/$defs/Property. Versão 0.1.0.",
+  "$id": "https://pibras.ibvi.ai/schema/mbras.schema.json",
+  "title": "Padrão PIBRAS de Dados Imobiliários",
+  "description": "Modelo canônico do padrão PIBRAS. Consuma entidades via $ref, ex.: mbras.schema.json#/$defs/Property. Versão 0.1.0.",
   "version": "0.1.0",
   "$comment": "Dinheiro: amount em centavos (inteiro). Datas/instantes: ISO 8601 UTC. Áreas em m². Coordenadas WGS84.",
 
@@ -379,7 +379,7 @@
       "required": ["id","unit_id","transaction_type","provenance","audit"],
       "properties": {
         "id": { "type": "string", "format": "uuid" },
-        "code": { "type": ["string","null"], "description": "Código MBRAS compatível, ex.: MB18495" },
+        "code": { "type": ["string","null"], "description": "Código legado compatível, ex.: MB18495" },
         "external_ids": { "type": "array", "items": { "$ref": "#/$defs/ExternalId" } },
         "unit_id": { "type": "string", "format": "uuid" },
         "building_id": { "type": ["string","null"], "format": "uuid" },

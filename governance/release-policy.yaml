@@ -1,0 +1,17 @@
+# PIBRAS release policy — validated against schema/release-policy.schema.json
+policy_version: "0.1.0"
+phase: identity
+identity:
+  neutral_org: ibvi-br
+  canonical_host: pibras.ibvi.ai
+  repo_url: https://github.com/ibvi-br/pibras.git
+  brand_exempt_paths:
+    - docs/PROPERTY-STANDARD-v0.1.md
+    - docs/PIBRAS-STANDARD-v0.1.md
+    - docs/REVIEW.md
+    - docs/REVIEW-FOLLOWUP.md
+approvals:
+  - gate: identity
+    approver: Ronaldo
+    date: "2026-07-10"
+    evidence: "Session approval: neutral org Ibvi, host pibras.ibvi.ai, repo ibvi-br/pibras"

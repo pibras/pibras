@@ -1,5 +1,8 @@
 # PIBRAS — Portfólio Imobiliário do Brasil
 
+> Status: historical and non-authoritative
+
+
 **Consolidação completa dos conceitos discutidos — Documento fundador**
 
 Versão: v0.1 · Data: 18 de junho de 2026

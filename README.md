@@ -11,7 +11,7 @@ O README é o índice de autoridade. Ele não substitui os documentos técnicos;
 | Documento | Status | Papel |
 |---|---|---|
 | [`docs/PIBRAS-STANDARD-v0.1.md`](docs/PIBRAS-STANDARD-v0.1.md) | Fundador / histórico | Consolidação original da visão, terminologia, manifesto e roadmap. Não é mais a fonte única para decisões técnicas. |
-| [`docs/MBRAS-PROPERTY-STANDARD.md`](docs/MBRAS-PROPERTY-STANDARD.md) | Baseline técnica v0.1.0 | Fonte de verdade dos artefatos atuais em `schema/`, `types/`, `db/` e `examples/`. |
+| [`docs/PROPERTY-STANDARD-v0.1.md`](docs/PROPERTY-STANDARD-v0.1.md) | Baseline técnica v0.1.0 | Fonte de verdade dos artefatos atuais em `schema/`, `types/`, `db/` e `examples/`. |
 | [`docs/PIBRAS-STANDARD-v0.2-draft.md`](docs/PIBRAS-STANDARD-v0.2-draft.md) | Draft de reconciliação | Próximo padrão proposto. Preserva boas decisões da v0.1.0 técnica e corrige lacunas de governança, LGPD, autorização e conformidade. |
 | [`docs/VERSIONING.md`](docs/VERSIONING.md) | Processo | Como versões, RFCs, compatibilidade e promoção de draft funcionam. |
 | [`GOVERNANCE.md`](GOVERNANCE.md) | Governança | Papéis, autoridade de mudança e rito de publicação. |
@@ -43,10 +43,10 @@ A baseline técnica já contém os alvos de transição v0.2 para:
 
 | Arquivo | O que é | Observação |
 |---|---|---|
-| [`docs/MBRAS-PROPERTY-STANDARD.md`](docs/MBRAS-PROPERTY-STANDARD.md) | Especificação técnica v0.1.0 + notas de transição v0.2 | Atualizar junto com schema, tipos e DDL. |
-| [`schema/mbras.schema.json`](schema/mbras.schema.json) | JSON Schema draft 2020-12 com `$defs` | Contrato formal de validação. |
+| [`docs/PROPERTY-STANDARD-v0.1.md`](docs/PROPERTY-STANDARD-v0.1.md) | Especificação técnica v0.1.0 + notas de transição v0.2 | Atualizar junto com schema, tipos e DDL. |
+| [`schema/mbras.schema.json`](schema/mbras.schema.json) | JSON Schema draft 2020-12 com `$defs` (caminho de compatibilidade v1; nome preservado até v2.0) | Contrato formal de validação. |
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.1 mínimo | Superfície API-first de referência para Unit, Property, Listing, ExposurePolicy e conformidade. |
-| [`types/mbras.ts`](types/mbras.ts) | Schemas Zod + tipos TypeScript inferidos | Espelho de `schema/mbras.schema.json`. |
+| [`types/mbras.ts`](types/mbras.ts) | Schemas Zod + tipos TypeScript inferidos (caminho de compatibilidade v1; nome preservado até v2.0) | Espelho de `schema/mbras.schema.json`. |
 | [`db/schema.sql`](db/schema.sql) | DDL Postgres | Tabelas, histórico, governança, índices e read model. |
 | [`examples/property.sample.json`](examples/property.sample.json) | Exemplo compatível v0.1.0 -> v0.2 | Mantém `code` e mostra `external_ids[]` durante a janela de transição. |
 | [`tests/golden/`](tests/golden/) | Fixtures de conformidade | Casos mínimos para evitar divergência entre implementações. |

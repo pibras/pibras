@@ -67,7 +67,7 @@ Ele conecta:
 
 PIBRAS não deve ser posicionado como:
 
-- o novo CRM da MBRAS;
+- o novo CRM do patrocinador fundador;
 - substituto obrigatório de Kenlo, Vista, Jetimob, Imobzi ou qualquer fornecedor;
 - clone brasileiro de MLS americano;
 - dependência obrigatória de TwentyCRM, Directus, Windmill, Hermes Agent ou Metabase;
@@ -86,7 +86,7 @@ PIBRAS não deve ser posicionado como:
 
 Antes de qualquer lançamento público, é necessário decidir quem assina a iniciativa inicial:
 
-- MBRAS como idealizadora e primeira usuária;
+- o patrocinador fundador como idealizador e primeiro usuário;
 - IBVI como patrocinadora técnica, caso a camada de valuation, AVM, liquidez e inteligência comercial venha dela;
 - uma entidade neutra ou grupo de trabalho, caso a ambição seja adoção por concorrentes e fornecedores externos.
 
@@ -94,7 +94,7 @@ O ponto crítico: se o PIBRAS parecer controlado por uma única brokerage, forne
 
 **PIBRAS nasce de uma necessidade real de mercado, com um primeiro patrocinador, mas deve operar sob governança aberta e neutra.**
 
-Recomendação objetiva: criar a organização pública do padrão sob uma identidade neutra, com MBRAS/IBVI como patrocinadores iniciais e primeiros casos de uso, não como donos fechados do vocabulário. A neutralidade deve aparecer no GitHub, no processo de RFC, na licença e na composição mínima do Working Group.
+Recomendação objetiva: criar a organização pública do padrão sob uma identidade neutra, com os patrocinadores fundadores (incluindo IBVI) como patrocinadores iniciais e primeiros casos de uso, não como donos fechados do vocabulário. A neutralidade deve aparecer no GitHub, no processo de RFC, na licença e na composição mínima do Working Group.
 
 ---
 
@@ -268,7 +268,7 @@ Esta v0.2 deve ser lida como uma reconciliação:
 
 | Tema | v0.1 fundador | v0.1.0 técnica atual | Decisão v0.2 alinhada |
 |---|---|---|---|
-| Código de imóvel | `mb_code` como campo relevante | `property.code` como código MBRAS | UUID canônico + `external_ids[]`; código MBRAS vira external id namespaced em v0.2 |
+| Código de imóvel | `mb_code` como campo relevante | `property.code` como código legado | UUID canônico + `external_ids[]`; código legado vira external id namespaced em v0.2 |
 | Dinheiro | campos `_brl` em reais inteiros | `Money { amount, currency }`, amount em centavos | manter `Money { amount, currency }`; abandonar `_brl` como convenção canônica |
 | Identidade física | Property como centro narrativo | `Building -> Unit -> Property`, matrícula em `Unit` | manter `Unit` como âncora de deduplicação e identidade física |
 | Bairro/geografia | strings normalizadas | `neighborhood` com aliases, centroid e polígonos | evoluir `Neighborhood` para `Geography`, mantendo aliases e geodados |
@@ -1376,7 +1376,7 @@ Cada implementação compatível deve conseguir:
 # 16. Decisões obrigatórias antes do lançamento público
 
 ```txt
-1. Quem assina a iniciativa inicial: MBRAS, IBVI, ambos ou grupo neutro?
+1. Quem assina a iniciativa inicial: Resolvido: organização neutra Ibvi (`pibras.ibvi.ai`), aprovado por Ronaldo em 2026-07-10.
 2. Qual licença será usada para spec, docs, schemas e código?
 3. Qual será o processo de RFC?
 4. O padrão será hospedado em organização neutra no GitHub?
@@ -1495,7 +1495,7 @@ scripts/
   validate_conformance.py    # runner: JSON Schema + avaliação de ExposurePolicy + feed + índice de casos
 docs/
   PIBRAS-STANDARD-v0.1.md
-  MBRAS-PROPERTY-STANDARD.md
+  PROPERTY-STANDARD-v0.1.md
   PIBRAS-STANDARD-v0.2-draft.md
   VERSIONING.md
   lgpd.md

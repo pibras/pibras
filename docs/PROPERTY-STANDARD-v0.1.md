@@ -1,5 +1,8 @@
 # Padrão MBRAS de Dados Imobiliários
 
+> Status: historical and non-authoritative
+
+
 **Property Inventory Hub — Modelo Canônico**
 Versão 0.1.0 · 2026-06-18 · Status: rascunho para revisão
 

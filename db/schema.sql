@@ -1,7 +1,7 @@
 -- =====================================================================
--- Padrão MBRAS de Dados Imobiliários — Modelo Canônico (Postgres / Neon)
+-- Padrão PIBRAS de Dados Imobiliários — Modelo Canônico (Postgres / Neon)
 -- Versão 0.1.0 · 2026-06-18
--- Fonte de verdade: docs/MBRAS-PROPERTY-STANDARD.md
+-- Fonte de verdade: docs/PROPERTY-STANDARD-v0.1.md
 --
 -- Convenções:
 --   * dinheiro: <campo>_amount BIGINT (centavos) + <campo>_currency currency

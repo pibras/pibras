@@ -1,8 +1,8 @@
 /**
- * Padrão MBRAS de Dados Imobiliários — Modelo Canônico
+ * Padrão PIBRAS de Dados Imobiliários — Modelo Canônico
  * Schemas Zod + tipos TypeScript inferidos. Versão 0.1.0 (2026-06-18).
  *
- * Fonte de verdade: docs/MBRAS-PROPERTY-STANDARD.md
+ * Fonte de verdade: docs/PROPERTY-STANDARD-v0.1.md
  * Mantenha em paralelo com schema/mbras.schema.json e db/schema.sql.
  *
  *   npm i zod
