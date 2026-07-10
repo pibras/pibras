@@ -69,11 +69,30 @@ Durante a janela de compatibilidade, `property.code` ainda existe para não queb
 
 ## Verificação local
 
-Não há `package.json` neste repositório. O runner de conformidade usa `uv` e valida JSON Schema draft 2020-12, XML de portal, índice de casos e expectativas de `ExposurePolicy`:
+As versões canônicas são Python `3.13.9`, uv `0.9.7`, Node `22.22.3` e npm `10.9.8`.
+O estado Python é travado por `pyproject.toml` + `uv.lock`; o estado TypeScript é travado por `package.json` + `package-lock.json` v3.
+
+Bootstrap reproduzível:
 
 ```bash
-uv run scripts/validate_conformance.py && uv run scripts/validate_openapi.py
+uv sync --frozen
+npm ci
 ```
+
+Checks canônicos:
+
+```bash
+uv lock --check
+uv run scripts/validate_conformance.py
+uv run scripts/validate_openapi.py
+uv run openapi-spec-validator openapi.yaml
+npm run typecheck
+npm run test:types
+npm run export:types-manifest -- --out .omo/evidence/task-2-types-manifest.json
+scripts/qa/task-2.sh --report .omo/evidence/task-2-manifest.json
+```
+
+Os validadores standalone continuam sendo executados via `uv run scripts/...`; não use chamadas diretas como `python3 scripts/validate_*.py`.
 
 ## Próximos passos
 
