@@ -13,7 +13,7 @@ O PIBRAS deve operar como padrão aberto, não como vocabulário fechado de uma 
 
 ## Regra institucional
 
-Os patrocinadores fundadores podem ser primeiros casos de uso, mas o vocabulário público vive sob a organização neutra Ibvi (`https://pibras.ibvi.ai`, repositório `https://github.com/ibvi-br/pibras.git`) antes de lançamento externo. Decisão registrada em `governance/release-policy.yaml` (aprovador: Ronaldo, 2026-07-10).
+Os patrocinadores fundadores podem ser primeiros casos de uso, mas o vocabulário público vive sob a organização neutra Ibvi (`https://pibras.ibvi.ai`, repositório `https://github.com/pibras/pibras.git`) antes de lançamento externo. Decisão registrada em `governance/release-policy.yaml` (aprovador: Ronaldo, 2026-07-10).
 
 ## Critérios para aceitar mudança
 

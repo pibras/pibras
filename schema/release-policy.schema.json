@@ -35,13 +35,13 @@
       ],
       "properties": {
         "neutral_org": {
-          "const": "ibvi-br"
+          "const": "pibras"
         },
         "canonical_host": {
           "const": "pibras.ibvi.ai"
         },
         "repo_url": {
-          "const": "https://github.com/ibvi-br/pibras.git"
+          "const": "https://github.com/pibras/pibras.git"
         },
         "brand_exempt_paths": {
           "type": "array",

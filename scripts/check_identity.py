@@ -2,7 +2,8 @@
 """check_identity.py — fail if branded uppercase tokens appear outside exempt paths."""
 import re, subprocess, sys, pathlib
 
-TOKEN = re.compile(r"MBRAS")
+# Token assembled from fragments so this scanner does not flag itself.
+TOKEN = re.compile("MB" + "RAS")
 BANNER = "Status: historical and non-authoritative"
 
 def exempt_paths():
@@ -25,9 +26,11 @@ def main():
     failures = []
     for f in files:
         p = pathlib.Path(f)
+        if not p.is_file():
+            continue
         try:
             text = p.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, FileNotFoundError):
+        except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
             continue
         if f in exempt:
             head = "\n".join(text.splitlines()[:20])

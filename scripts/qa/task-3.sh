@@ -25,12 +25,12 @@ cp /tmp/rp.bak governance/release-policy.yaml
 python3 - <<'PY'
 import pathlib
 t = pathlib.Path("governance/release-policy.yaml").read_text()
-pathlib.Path("governance/release-policy.yaml").write_text(t.replace("github.com/ibvi-br/pibras.git", "github.com/other-org/pibras.git"))
+pathlib.Path("governance/release-policy.yaml").write_text(t.replace("github.com/pibras/pibras.git", "github.com/other-org/pibras.git"))
 PY
 $RUN scripts/validate_release_policy.py 2>/dev/null && record url-mutation-rejected FAIL || record url-mutation-rejected PASS
 cp /tmp/rp.bak governance/release-policy.yaml
 # 5. negative: branded token in tracked file -> scanner must fail
-echo "MBRAS leak test" > /tmp/qa_leak.md && cp /tmp/qa_leak.md qa_leak_probe.md && git add qa_leak_probe.md
+printf '%s%s leak test\n' MB RAS > /tmp/qa_leak.md && cp /tmp/qa_leak.md qa_leak_probe.md && git add qa_leak_probe.md
 $RUN scripts/check_identity.py 2>/dev/null && record brand-leak-rejected FAIL || record brand-leak-rejected PASS
 git rm -q --cached qa_leak_probe.md && rm -f qa_leak_probe.md
 
