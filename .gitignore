@@ -1,5 +1,6 @@
 # Local agent / orchestration state (never tracked)
 .omo/
+.claude/
 .codegraph
 .artifacts/
 
