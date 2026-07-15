@@ -18,6 +18,8 @@ O README é o índice de autoridade. Ele não substitui os documentos técnicos;
 | [`RFC_PROCESS.md`](RFC_PROCESS.md) | Processo | Como propor, revisar e aceitar mudanças normativas. |
 | [`docs/exposure-policy.md`](docs/exposure-policy.md) | Normativo v0.2 | Semântica de autorização e precedência `ExposurePolicy`. |
 | [`docs/lgpd.md`](docs/lgpd.md) | Normativo v0.2 | Requisitos mínimos de LGPD, DSAR, retenção e auditoria. |
+| [`docs/privacy-operations.md`](docs/privacy-operations.md) | Normativo v0.2 | Controles operacionais para fluxo de dados, enriquecimento, Sync Service, sharing ledger e gates de produção. |
+| [`docs/lgpd-mitos-e-realidade.md`](docs/lgpd-mitos-e-realidade.md) | Guia interpretativo | Comparação detalhada entre mitos populares, realidade jurídica e controles operacionais da LGPD. |
 | [`docs/entity-resolution.md`](docs/entity-resolution.md) | Normativo v0.2 | Regras de deduplicação, survivorship e revisão. |
 | [`mappings/v0.1.0-code-to-v0.2.md`](mappings/v0.1.0-code-to-v0.2.md) | Migração | De/Para entre artefatos atuais e o alvo v0.2. |
 

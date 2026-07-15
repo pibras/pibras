@@ -71,6 +71,15 @@ export const DataSubjectRequestStatus = z.enum(["received", "verifying_identity"
 export const ImportSourceType = z.enum(["api", "csv", "excel", "xml", "database_dump", "manual"]);
 export const ImportBatchStatus = z.enum(["draft", "mapping", "validating", "reviewing", "imported", "failed", "cancelled"]);
 export const AuditChangeType = z.enum(["insert", "update", "delete"]);
+export const LegalBasisType = z.enum(["consent", "legal_obligation", "public_policy", "research", "contract", "judicial_exercise", "life_protection", "health_protection", "legitimate_interest", "credit_protection"]);
+export const AssessmentStatus = z.enum(["draft", "approved", "rejected", "expired"]);
+export const PartnerRole = z.enum(["operator", "independent_controller", "joint_controller"]);
+export const AllowlistStatus = z.enum(["draft", "active", "suspended", "retired"]);
+export const SharingEventStatus = z.enum(["authorized", "delivered", "failed", "blocked"]);
+export const DSARPropagationStatus = z.enum(["pending", "sent", "acknowledged", "fulfilled", "failed"]);
+export const AutomatedDecisionOutcome = z.enum(["approved", "denied", "routed", "flagged", "no_effect"]);
+export const AutomatedReviewStatus = z.enum(["not_requested", "requested", "under_review", "completed"]);
+export const LegacyQualificationStatus = z.enum(["draft", "reviewing", "approved", "rejected", "quarantined", "imported"]);
 
 /** Hierarquia de confiança para resolução de conflito (menor = mais confiável). */
 export const TrustTier = z.number().int().min(1).max(6);
@@ -554,6 +563,134 @@ export const AuditEvent = z.object({
   occurred_at: datetime,
 });
 
+/** Catálogo versionável de finalidades; não contém dados pessoais. */
+export const ProcessingPurpose = z.object({
+  id: uuid,
+  tenant_id: uuid,
+  code: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  data_categories: z.array(z.string()).min(1),
+  retention_policy_id: uuid.nullish(),
+  owner_role: z.string().min(1),
+  active: z.boolean(),
+  created_at: datetime,
+  updated_at: datetime,
+}).strict();
+
+export const LegalBasisAssessment = z.object({
+  id: uuid,
+  tenant_id: uuid,
+  processing_purpose_id: uuid,
+  legal_basis: LegalBasisType,
+  status: AssessmentStatus,
+  rationale: z.string().min(1),
+  safeguards: z.array(z.string()),
+  evidence_ref: z.string().nullish(),
+  assessed_by: z.string().min(1),
+  assessed_at: datetime,
+  expires_at: datetime.nullish(),
+  updated_at: datetime,
+}).strict();
+
+export const PartnerRelationship = z.object({
+  id: uuid,
+  tenant_id: uuid,
+  partner_organization_id: uuid,
+  role: PartnerRole,
+  contract_ref: z.string().min(1),
+  dpa_ref: z.string().min(1),
+  valid_from: dateOnly,
+  valid_until: dateOnly.nullish(),
+  dsar_contact_ref: z.string().nullish(),
+  active: z.boolean(),
+  created_at: datetime,
+  updated_at: datetime,
+}).strict();
+
+export const FieldAllowlist = z.object({
+  id: uuid,
+  partner_relationship_id: uuid,
+  processing_purpose_id: uuid,
+  version: z.number().int().min(1),
+  allowed_fields: z.array(z.string().min(1)).min(1),
+  status: AllowlistStatus,
+  approved_by: z.string().nullish(),
+  approved_at: datetime.nullish(),
+  effective_from: datetime,
+  effective_until: datetime.nullish(),
+  created_at: datetime,
+  updated_at: datetime,
+}).strict();
+
+/** Ledger sem payload: registra apenas referências, campos e digest técnico. */
+export const SharingEvent = z.object({
+  id: uuid,
+  tenant_id: uuid,
+  partner_relationship_id: uuid,
+  processing_purpose_id: uuid,
+  legal_basis_assessment_id: uuid,
+  field_allowlist_id: uuid,
+  field_allowlist_version: z.number().int().min(1),
+  shared_fields: z.array(z.string().min(1)).min(1),
+  record_count: z.number().int().min(0),
+  payload_digest: z.string().min(1),
+  status: SharingEventStatus,
+  correlation_id: z.string().min(1),
+  occurred_at: datetime,
+  failure_code: z.string().nullish(),
+}).strict();
+
+export const DSARPropagation = z.object({
+  id: uuid,
+  data_subject_request_id: uuid,
+  partner_relationship_id: uuid,
+  status: DSARPropagationStatus,
+  action: RetentionAction,
+  sent_at: datetime.nullish(),
+  acknowledged_at: datetime.nullish(),
+  fulfilled_at: datetime.nullish(),
+  due_at: datetime,
+  evidence_ref: z.string().nullish(),
+  failure_code: z.string().nullish(),
+  updated_at: datetime,
+}).strict();
+
+export const AutomatedDecisionRecord = z.object({
+  id: uuid,
+  tenant_id: uuid,
+  processing_purpose_id: uuid,
+  legal_basis_assessment_id: uuid,
+  model_ref: z.string().min(1),
+  model_version: z.string().min(1),
+  input_categories: z.array(z.string()),
+  outcome: AutomatedDecisionOutcome,
+  sole_automated: z.boolean(),
+  review_status: AutomatedReviewStatus,
+  review_request_ref: z.string().nullish(),
+  explanation_ref: z.string().nullish(),
+  decided_at: datetime,
+  reviewed_at: datetime.nullish(),
+}).strict();
+
+export const LegacyImportQualification = z.object({
+  id: uuid,
+  tenant_id: uuid,
+  import_batch_id: uuid,
+  processing_purpose_id: uuid,
+  legal_basis_assessment_id: uuid,
+  origin_verified: z.boolean(),
+  purpose_compatible: z.boolean(),
+  suppression_applied: z.boolean(),
+  wave_number: z.number().int().min(1),
+  record_count: z.number().int().min(0),
+  status: LegacyQualificationStatus,
+  evidence_ref: z.string().nullish(),
+  assessed_by: z.string().min(1),
+  assessed_at: datetime,
+  updated_at: datetime,
+}).strict();
+
 export const ConformanceTestCase = z.object({
   id: z.string(),
   title: z.string(),
@@ -615,6 +752,14 @@ export type ImportSource = z.infer<typeof ImportSource>;
 export type ImportBatch = z.infer<typeof ImportBatch>;
 export type ImportMapping = z.infer<typeof ImportMapping>;
 export type AuditEvent = z.infer<typeof AuditEvent>;
+export type ProcessingPurpose = z.infer<typeof ProcessingPurpose>;
+export type LegalBasisAssessment = z.infer<typeof LegalBasisAssessment>;
+export type PartnerRelationship = z.infer<typeof PartnerRelationship>;
+export type FieldAllowlist = z.infer<typeof FieldAllowlist>;
+export type SharingEvent = z.infer<typeof SharingEvent>;
+export type DSARPropagation = z.infer<typeof DSARPropagation>;
+export type AutomatedDecisionRecord = z.infer<typeof AutomatedDecisionRecord>;
+export type LegacyImportQualification = z.infer<typeof LegacyImportQualification>;
 export type ConformanceTestCase = z.infer<typeof ConformanceTestCase>;
 export type Neighborhood = z.infer<typeof Neighborhood>;
 export type Geography = z.infer<typeof Geography>;

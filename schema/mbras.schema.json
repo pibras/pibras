@@ -156,6 +156,15 @@
       "type": "string",
       "enum": ["insert","update","delete"]
     },
+    "LegalBasisType": { "type": "string", "enum": ["consent","legal_obligation","public_policy","research","contract","judicial_exercise","life_protection","health_protection","legitimate_interest","credit_protection"] },
+    "AssessmentStatus": { "type": "string", "enum": ["draft","approved","rejected","expired"] },
+    "PartnerRole": { "type": "string", "enum": ["operator","independent_controller","joint_controller"] },
+    "AllowlistStatus": { "type": "string", "enum": ["draft","active","suspended","retired"] },
+    "SharingEventStatus": { "type": "string", "enum": ["authorized","delivered","failed","blocked"] },
+    "DSARPropagationStatus": { "type": "string", "enum": ["pending","sent","acknowledged","fulfilled","failed"] },
+    "AutomatedDecisionOutcome": { "type": "string", "enum": ["approved","denied","routed","flagged","no_effect"] },
+    "AutomatedReviewStatus": { "type": "string", "enum": ["not_requested","requested","under_review","completed"] },
+    "LegacyQualificationStatus": { "type": "string", "enum": ["draft","reviewing","approved","rejected","quarantined","imported"] },
 
     "Money": {
       "type": "object",
@@ -774,6 +783,91 @@
         "actor": { "type": ["string","null"] },
         "sync_batch_id": { "type": ["string","null"], "format": "uuid" },
         "occurred_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "ProcessingPurpose": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","tenant_id","code","name","description","data_categories","owner_role","active","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "tenant_id": { "type": "string", "format": "uuid" },
+        "code": { "type": "string", "minLength": 1 }, "name": { "type": "string", "minLength": 1 }, "description": { "type": "string", "minLength": 1 },
+        "data_categories": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "retention_policy_id": { "type": ["string","null"], "format": "uuid" }, "owner_role": { "type": "string", "minLength": 1 },
+        "active": { "type": "boolean" }, "created_at": { "type": "string", "format": "date-time" }, "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "LegalBasisAssessment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","tenant_id","processing_purpose_id","legal_basis","status","rationale","safeguards","assessed_by","assessed_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "tenant_id": { "type": "string", "format": "uuid" }, "processing_purpose_id": { "type": "string", "format": "uuid" },
+        "legal_basis": { "$ref": "#/$defs/LegalBasisType" }, "status": { "$ref": "#/$defs/AssessmentStatus" }, "rationale": { "type": "string", "minLength": 1 },
+        "safeguards": { "type": "array", "items": { "type": "string" } }, "evidence_ref": { "type": ["string","null"] }, "assessed_by": { "type": "string", "minLength": 1 },
+        "assessed_at": { "type": "string", "format": "date-time" }, "expires_at": { "type": ["string","null"], "format": "date-time" }, "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "PartnerRelationship": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","tenant_id","partner_organization_id","role","contract_ref","dpa_ref","valid_from","active","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "tenant_id": { "type": "string", "format": "uuid" }, "partner_organization_id": { "type": "string", "format": "uuid" },
+        "role": { "$ref": "#/$defs/PartnerRole" }, "contract_ref": { "type": "string", "minLength": 1 }, "dpa_ref": { "type": "string", "minLength": 1 },
+        "valid_from": { "type": "string", "format": "date" }, "valid_until": { "type": ["string","null"], "format": "date" }, "dsar_contact_ref": { "type": ["string","null"] },
+        "active": { "type": "boolean" }, "created_at": { "type": "string", "format": "date-time" }, "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "FieldAllowlist": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","partner_relationship_id","processing_purpose_id","version","allowed_fields","status","effective_from","created_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "partner_relationship_id": { "type": "string", "format": "uuid" }, "processing_purpose_id": { "type": "string", "format": "uuid" },
+        "version": { "type": "integer", "minimum": 1 }, "allowed_fields": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }, "status": { "$ref": "#/$defs/AllowlistStatus" },
+        "approved_by": { "type": ["string","null"] }, "approved_at": { "type": ["string","null"], "format": "date-time" }, "effective_from": { "type": "string", "format": "date-time" },
+        "effective_until": { "type": ["string","null"], "format": "date-time" }, "created_at": { "type": "string", "format": "date-time" }, "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "SharingEvent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","tenant_id","partner_relationship_id","processing_purpose_id","legal_basis_assessment_id","field_allowlist_id","field_allowlist_version","shared_fields","record_count","payload_digest","status","correlation_id","occurred_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "tenant_id": { "type": "string", "format": "uuid" }, "partner_relationship_id": { "type": "string", "format": "uuid" },
+        "processing_purpose_id": { "type": "string", "format": "uuid" }, "legal_basis_assessment_id": { "type": "string", "format": "uuid" }, "field_allowlist_id": { "type": "string", "format": "uuid" },
+        "field_allowlist_version": { "type": "integer", "minimum": 1 }, "shared_fields": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "record_count": { "type": "integer", "minimum": 0 }, "payload_digest": { "type": "string", "minLength": 1 }, "status": { "$ref": "#/$defs/SharingEventStatus" },
+        "correlation_id": { "type": "string", "minLength": 1 }, "occurred_at": { "type": "string", "format": "date-time" }, "failure_code": { "type": ["string","null"] }
+      }
+    },
+    "DSARPropagation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","data_subject_request_id","partner_relationship_id","status","action","due_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "data_subject_request_id": { "type": "string", "format": "uuid" }, "partner_relationship_id": { "type": "string", "format": "uuid" },
+        "status": { "$ref": "#/$defs/DSARPropagationStatus" }, "action": { "$ref": "#/$defs/RetentionAction" }, "sent_at": { "type": ["string","null"], "format": "date-time" },
+        "acknowledged_at": { "type": ["string","null"], "format": "date-time" }, "fulfilled_at": { "type": ["string","null"], "format": "date-time" }, "due_at": { "type": "string", "format": "date-time" },
+        "evidence_ref": { "type": ["string","null"] }, "failure_code": { "type": ["string","null"] }, "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "AutomatedDecisionRecord": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","tenant_id","processing_purpose_id","legal_basis_assessment_id","model_ref","model_version","input_categories","outcome","sole_automated","review_status","decided_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "tenant_id": { "type": "string", "format": "uuid" }, "processing_purpose_id": { "type": "string", "format": "uuid" },
+        "legal_basis_assessment_id": { "type": "string", "format": "uuid" }, "model_ref": { "type": "string", "minLength": 1 }, "model_version": { "type": "string", "minLength": 1 },
+        "input_categories": { "type": "array", "items": { "type": "string" } }, "outcome": { "$ref": "#/$defs/AutomatedDecisionOutcome" }, "sole_automated": { "type": "boolean" },
+        "review_status": { "$ref": "#/$defs/AutomatedReviewStatus" }, "review_request_ref": { "type": ["string","null"] }, "explanation_ref": { "type": ["string","null"] },
+        "decided_at": { "type": "string", "format": "date-time" }, "reviewed_at": { "type": ["string","null"], "format": "date-time" }
+      }
+    },
+    "LegacyImportQualification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id","tenant_id","import_batch_id","processing_purpose_id","legal_basis_assessment_id","origin_verified","purpose_compatible","suppression_applied","wave_number","record_count","status","assessed_by","assessed_at","updated_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" }, "tenant_id": { "type": "string", "format": "uuid" }, "import_batch_id": { "type": "string", "format": "uuid" },
+        "processing_purpose_id": { "type": "string", "format": "uuid" }, "legal_basis_assessment_id": { "type": "string", "format": "uuid" }, "origin_verified": { "type": "boolean" },
+        "purpose_compatible": { "type": "boolean" }, "suppression_applied": { "type": "boolean" }, "wave_number": { "type": "integer", "minimum": 1 }, "record_count": { "type": "integer", "minimum": 0 },
+        "status": { "$ref": "#/$defs/LegacyQualificationStatus" }, "evidence_ref": { "type": ["string","null"] }, "assessed_by": { "type": "string", "minLength": 1 },
+        "assessed_at": { "type": "string", "format": "date-time" }, "updated_at": { "type": "string", "format": "date-time" }
       }
     },
 

@@ -1,5 +1,11 @@
 # LGPD no PIBRAS
 
+Este documento descreve como as entidades do padrão suportam conformidade. Os requisitos
+operacionais, a taxonomia **MUST / POLICY-SHALL / SHOULD / MAY**, o Sync Service e os gates
+de compartilhamento estão em [`privacy-operations.md`](privacy-operations.md). Em caso de
+conflito, a lei e a regulamentação aplicável prevalecem; entre documentos PIBRAS, o requisito
+mais restritivo prevalece até reconciliação por RFC.
+
 ## Requisitos mínimos v0.2
 
 - `Tenant` identifica o limite operacional de dados.
@@ -27,8 +33,13 @@ Solicitações de acesso, correção, exclusão, portabilidade e oposição deve
 
 ## Classificação de PII
 
-Campos sensíveis são marcados no `schema/mbras.schema.json` com `x-pii: true` e `x-sensitivity` (ex.: `Owner.tax_id`, `Party.tax_id`, `Property.min_accepted_price`). A lista normativa de dados sensíveis (draft §7.1) deve derivar dessas anotações, não de prosa paralela.
+Campos pessoais ou de risco elevado são marcados no `schema/mbras.schema.json` com `x-pii: true` e `x-sensitivity` (ex.: `Owner.tax_id`, `Party.tax_id`, `Property.min_accepted_price`). `x-sensitivity` é classificação de risco do PIBRAS, não declaração de que todo campo marcado é "dado pessoal sensível" na definição do art. 5º, II, da LGPD. A lista operacional (draft §7.1) deve derivar dessas anotações, não de prosa paralela.
 
 ## Regra de implementação
 
 Dados pessoais sensíveis não devem depender de ocultação no frontend. A API deve aplicar `ExposurePolicy` antes de retornar ou exportar campos.
+
+## Referências oficiais
+
+- [Lei nº 13.709/2018 — LGPD](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm)
+- [Publicações e guias da ANPD](https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-educativos-e-publicacoes)

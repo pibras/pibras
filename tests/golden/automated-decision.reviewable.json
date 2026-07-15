@@ -1,0 +1,23 @@
+{
+  "id": "automated-decision-reviewable",
+  "schema_ref": "#/$defs/AutomatedDecisionRecord",
+  "expected_result": "valid",
+  "payload": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "tenant_id": "22222222-2222-4222-8222-222222222222",
+    "processing_purpose_id": "33333333-3333-4333-8333-333333333333",
+    "legal_basis_assessment_id": "11111111-1111-4111-8111-111111111111",
+    "model_ref": "model://lead-routing",
+    "model_version": "1.0.0",
+    "input_categories": [
+      "commercial_interest"
+    ],
+    "outcome": "routed",
+    "sole_automated": true,
+    "review_status": "requested",
+    "review_request_ref": "review://111",
+    "explanation_ref": "explanation://111",
+    "decided_at": "2026-07-14T12:00:00Z",
+    "reviewed_at": null
+  }
+}

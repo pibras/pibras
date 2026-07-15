@@ -1,0 +1,22 @@
+{
+  "id": "legal-basis-assessment-approved",
+  "schema_ref": "#/$defs/LegalBasisAssessment",
+  "expected_result": "valid",
+  "payload": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "tenant_id": "22222222-2222-4222-8222-222222222222",
+    "processing_purpose_id": "33333333-3333-4333-8333-333333333333",
+    "legal_basis": "contract",
+    "status": "approved",
+    "rationale": "Procedimento preliminar solicitado pelo titular.",
+    "safeguards": [
+      "field_minimization",
+      "documented_request"
+    ],
+    "evidence_ref": "evidence://assessment/111",
+    "assessed_by": "privacy-operations",
+    "assessed_at": "2026-07-14T12:00:00Z",
+    "expires_at": null,
+    "updated_at": "2026-07-14T12:00:00Z"
+  }
+}

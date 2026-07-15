@@ -1,10 +1,19 @@
 import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
 import test from "node:test"
 
 import {
   ConformanceTestCase,
   ExposurePolicy,
   Money,
+  AutomatedDecisionRecord,
+  DSARPropagation,
+  FieldAllowlist,
+  LegacyImportQualification,
+  LegalBasisAssessment,
+  PartnerRelationship,
+  ProcessingPurpose,
+  SharingEvent,
   type ConformanceTestCase as ConformanceTestCaseValue,
   type ExposurePolicy as ExposurePolicyValue,
   type Money as MoneyValue,
@@ -89,4 +98,39 @@ test("ConformanceTestCase defaults applies_to to an empty list", () => {
     applies_to: [],
   } satisfies ConformanceTestCaseValue
   assert.deepEqual(parsed, expected)
+})
+
+const privacyFixtures = [
+  ["processing-purpose.valid.json", ProcessingPurpose],
+  ["legal-basis-assessment.valid.json", LegalBasisAssessment],
+  ["partner-relationship.active.json", PartnerRelationship],
+  ["field-allowlist.active.json", FieldAllowlist],
+  ["sharing-event.delivered.json", SharingEvent],
+  ["dsar-propagation.fulfilled.json", DSARPropagation],
+  ["automated-decision.reviewable.json", AutomatedDecisionRecord],
+  ["legacy-import-qualification.approved.json", LegacyImportQualification],
+] as const
+
+for (const [fixtureName, contract] of privacyFixtures) {
+  test(`privacy operations contract accepts ${fixtureName}`, () => {
+    const fixtureUrl = new URL(`../golden/${fixtureName}`, import.meta.url)
+    const fixture = JSON.parse(readFileSync(fixtureUrl, "utf8")) as { payload: unknown }
+    assert.doesNotThrow(() => contract.parse(fixture.payload))
+  })
+}
+
+test("FieldAllowlist rejects an empty field selection", () => {
+  const fixtureUrl = new URL("../golden/field-allowlist.active.json", import.meta.url)
+  const fixture = JSON.parse(readFileSync(fixtureUrl, "utf8")) as { payload: Record<string, unknown> }
+  const payload = fixture.payload
+  payload["allowed_fields"] = []
+  assert.throws(() => FieldAllowlist.parse(payload))
+})
+
+test("SharingEvent rejects payload content outside the ledger contract", () => {
+  const fixtureUrl = new URL("../golden/sharing-event.delivered.json", import.meta.url)
+  const fixture = JSON.parse(readFileSync(fixtureUrl, "utf8")) as { payload: Record<string, unknown> }
+  const payload = fixture.payload
+  payload["payload"] = { cpf: "must-not-enter-ledger" }
+  assert.throws(() => SharingEvent.parse(payload))
 })

@@ -5,7 +5,10 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/property.valid.json",
     "expected_result": "valid",
-    "applies_to": ["schema", "types"]
+    "applies_to": [
+      "schema",
+      "types"
+    ]
   },
   {
     "id": "property-invalid-money-brl-scalar",
@@ -13,7 +16,10 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/property.invalid-money.json",
     "expected_result": "invalid",
-    "applies_to": ["schema", "types"]
+    "applies_to": [
+      "schema",
+      "types"
+    ]
   },
   {
     "id": "listing-public-masked-address",
@@ -21,7 +27,10 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/listing.public-masked.json",
     "expected_result": "valid",
-    "applies_to": ["policy", "listing"]
+    "applies_to": [
+      "policy",
+      "listing"
+    ]
   },
   {
     "id": "portal-feed-valid-xml",
@@ -29,7 +38,9 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/portal-feed.valid.xml",
     "expected_result": "valid",
-    "applies_to": ["portal-feed"]
+    "applies_to": [
+      "portal-feed"
+    ]
   },
   {
     "id": "import-row-pending-change",
@@ -37,7 +48,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/import-row.pending-change.json",
     "expected_result": "valid",
-    "applies_to": ["import", "ingestion", "db"]
+    "applies_to": [
+      "import",
+      "ingestion",
+      "db"
+    ]
   },
   {
     "id": "money-centavos-brl",
@@ -45,7 +60,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/money.centavos.expected.json",
     "expected_result": "valid",
-    "applies_to": ["schema", "types", "docs"]
+    "applies_to": [
+      "schema",
+      "types",
+      "docs"
+    ]
   },
   {
     "id": "exposure-policy-confidential-default-deny",
@@ -53,7 +72,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/exposure-policy.default-deny.json",
     "expected_result": "valid",
-    "applies_to": ["schema", "types", "policy"]
+    "applies_to": [
+      "schema",
+      "types",
+      "policy"
+    ]
   },
   {
     "id": "unit-dedupe-candidate-high-confidence",
@@ -61,7 +84,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/unit.duplicate-candidate.json",
     "expected_result": "valid",
-    "applies_to": ["dedupe", "db", "docs"]
+    "applies_to": [
+      "dedupe",
+      "db",
+      "docs"
+    ]
   },
   {
     "id": "external-source-cannot-overwrite-trusted-price",
@@ -69,7 +96,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/pending-change.external-overwrite.json",
     "expected_result": "valid",
-    "applies_to": ["db", "ingestion", "docs"]
+    "applies_to": [
+      "db",
+      "ingestion",
+      "docs"
+    ]
   },
   {
     "id": "data-subject-request-valid",
@@ -77,7 +108,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/data-subject-request.valid.json",
     "expected_result": "valid",
-    "applies_to": ["schema", "types", "lgpd"]
+    "applies_to": [
+      "schema",
+      "types",
+      "lgpd"
+    ]
   },
   {
     "id": "retention-policy-valid",
@@ -85,7 +120,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/retention-policy.valid.json",
     "expected_result": "valid",
-    "applies_to": ["schema", "types", "lgpd"]
+    "applies_to": [
+      "schema",
+      "types",
+      "lgpd"
+    ]
   },
   {
     "id": "data-subject-request-deletion-fulfilled",
@@ -93,7 +132,11 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/data-subject-request.deletion-fulfilled.json",
     "expected_result": "valid",
-    "applies_to": ["schema", "types", "lgpd"]
+    "applies_to": [
+      "schema",
+      "types",
+      "lgpd"
+    ]
   },
   {
     "id": "external-source-cannot-overwrite-owner-pii",
@@ -101,7 +144,12 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/pending-change.owner-pii-protected.json",
     "expected_result": "valid",
-    "applies_to": ["db", "ingestion", "lgpd", "docs"]
+    "applies_to": [
+      "db",
+      "ingestion",
+      "lgpd",
+      "docs"
+    ]
   },
   {
     "id": "unit-dedupe-candidate-review-band",
@@ -109,6 +157,106 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/unit.dedupe-review-band.json",
     "expected_result": "valid",
-    "applies_to": ["dedupe", "db", "docs"]
+    "applies_to": [
+      "dedupe",
+      "db",
+      "docs"
+    ]
+  },
+  {
+    "id": "processing-purpose-catalogued",
+    "title": "Processing purpose is explicit, versionable, and owned",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/processing-purpose.valid.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "legal-basis-assessment-approved",
+    "title": "Legal basis assessment records rationale and safeguards",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/legal-basis-assessment.valid.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "partner-relationship-active",
+    "title": "Partner relationship records role and active contractual references",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/partner-relationship.active.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "field-allowlist-active",
+    "title": "Active field allowlist is purpose-bound and versioned",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/field-allowlist.active.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "sharing-event-ledger-delivered",
+    "title": "Sharing ledger records fields and digest without copying payload",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/sharing-event.delivered.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "dsar-propagation-fulfilled",
+    "title": "DSAR propagation records partner fulfilment evidence",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/dsar-propagation.fulfilled.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "automated-decision-reviewable",
+    "title": "Sole automated decision exposes review and explanation references",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/automated-decision.reviewable.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
+  },
+  {
+    "id": "legacy-import-qualified-wave",
+    "title": "Legacy import wave records origin, compatibility, and suppression checks",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/legacy-import-qualification.approved.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "schema",
+      "types",
+      "privacy-operations"
+    ]
   }
 ]

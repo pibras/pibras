@@ -60,6 +60,14 @@ CREATE TYPE import_batch_status AS ENUM ('draft','mapping','validating','reviewi
 CREATE TYPE lead_stage      AS ENUM ('new','qualified','engaged','negotiating','won','lost');
 CREATE TYPE visit_status    AS ENUM ('scheduled','done','no_show','cancelled');
 CREATE TYPE offer_status    AS ENUM ('submitted','countered','accepted','rejected','withdrawn');
+CREATE TYPE legal_basis_type AS ENUM ('consent','legal_obligation','public_policy','research','contract','rights_exercise','life_protection','health_protection','legitimate_interest','credit_protection');
+CREATE TYPE assessment_status AS ENUM ('draft','approved','rejected','expired','revoked');
+CREATE TYPE partner_role AS ENUM ('operator','independent_controller','joint_controller');
+CREATE TYPE allowlist_status AS ENUM ('draft','active','retired');
+CREATE TYPE sharing_event_status AS ENUM ('allowed','blocked','failed','delivered');
+CREATE TYPE dsar_propagation_status AS ENUM ('pending','sent','acknowledged','fulfilled','failed','not_applicable');
+CREATE TYPE automated_decision_outcome AS ENUM ('approved','denied','ranked','routed','flagged','other');
+CREATE TYPE legacy_qualification_status AS ENUM ('pending','approved','rejected','quarantined','completed');
 
 -- ---------------------------------------------------------------------
 -- Gatilho genérico: updated_at + version++
@@ -792,6 +800,216 @@ CREATE TABLE import_mapping (
 );
 CREATE INDEX idx_import_mapping_source ON import_mapping(source_id);
 CREATE TRIGGER trg_import_mapping_touch BEFORE UPDATE ON import_mapping FOR EACH ROW EXECUTE FUNCTION touch_row();
+
+-- =====================================================================
+-- Governanca operacional de privacidade (LGPD / integracoes Hub-and-Spoke)
+-- Estas tabelas registram fundamento, autorizacao e prova de compartilhamento.
+-- O ledger guarda somente metadados; payloads e valores pessoais nao pertencem aqui.
+-- =====================================================================
+CREATE TABLE processing_purpose (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+  code            TEXT NOT NULL,
+  name            TEXT NOT NULL,
+  description     TEXT NOT NULL,
+  compatible_with_original_purpose BOOLEAN NOT NULL DEFAULT false,
+  active          BOOLEAN NOT NULL DEFAULT true,
+  owner_user_id   UUID REFERENCES "user"(id) ON DELETE SET NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  version         INTEGER NOT NULL DEFAULT 1,
+  UNIQUE (tenant_id, code)
+);
+CREATE INDEX idx_processing_purpose_tenant ON processing_purpose(tenant_id) WHERE active;
+CREATE TRIGGER trg_processing_purpose_touch BEFORE UPDATE ON processing_purpose FOR EACH ROW EXECUTE FUNCTION touch_row();
+
+CREATE TABLE legal_basis_assessment (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+  purpose_id      UUID NOT NULL REFERENCES processing_purpose(id) ON DELETE RESTRICT,
+  legal_basis     legal_basis_type NOT NULL,
+  status          assessment_status NOT NULL DEFAULT 'draft',
+  rationale       TEXT NOT NULL,
+  balancing_test_ref TEXT,
+  transparency_notice_ref TEXT,
+  assessed_by     UUID REFERENCES "user"(id) ON DELETE SET NULL,
+  approved_by     UUID REFERENCES "user"(id) ON DELETE SET NULL,
+  assessed_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  valid_until     TIMESTAMPTZ,
+  revoked_at      TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  version         INTEGER NOT NULL DEFAULT 1,
+  CHECK (valid_until IS NULL OR valid_until > assessed_at),
+  CHECK (revoked_at IS NULL OR status = 'revoked'),
+  CHECK (legal_basis <> 'legitimate_interest' OR balancing_test_ref IS NOT NULL),
+  CHECK (status <> 'approved' OR approved_by IS NOT NULL)
+);
+CREATE INDEX idx_legal_basis_purpose_status ON legal_basis_assessment(purpose_id, status);
+CREATE INDEX idx_legal_basis_validity ON legal_basis_assessment(valid_until) WHERE status = 'approved';
+CREATE TRIGGER trg_legal_basis_assessment_touch BEFORE UPDATE ON legal_basis_assessment FOR EACH ROW EXECUTE FUNCTION touch_row();
+
+CREATE TABLE partner_relationship (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+  partner_organization_id UUID NOT NULL REFERENCES organization(id) ON DELETE RESTRICT,
+  role            partner_role NOT NULL,
+  contract_ref    TEXT NOT NULL,
+  dpa_ref         TEXT NOT NULL,
+  effective_from  DATE NOT NULL,
+  effective_until DATE,
+  active          BOOLEAN NOT NULL DEFAULT true,
+  dsar_contact_ref TEXT NOT NULL,
+  retention_period_days INTEGER NOT NULL CHECK (retention_period_days >= 0),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  version         INTEGER NOT NULL DEFAULT 1,
+  CHECK (effective_until IS NULL OR effective_until >= effective_from),
+  UNIQUE (tenant_id, partner_organization_id, role, effective_from)
+);
+CREATE INDEX idx_partner_relationship_active ON partner_relationship(tenant_id, partner_organization_id) WHERE active;
+CREATE TRIGGER trg_partner_relationship_touch BEFORE UPDATE ON partner_relationship FOR EACH ROW EXECUTE FUNCTION touch_row();
+
+CREATE TABLE field_allowlist (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+  partner_relationship_id UUID NOT NULL REFERENCES partner_relationship(id) ON DELETE CASCADE,
+  purpose_id      UUID NOT NULL REFERENCES processing_purpose(id) ON DELETE RESTRICT,
+  name            TEXT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (partner_relationship_id, purpose_id, name)
+);
+
+CREATE TABLE field_allowlist_version (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  allowlist_id    UUID NOT NULL REFERENCES field_allowlist(id) ON DELETE CASCADE,
+  version_number  INTEGER NOT NULL CHECK (version_number > 0),
+  status          allowlist_status NOT NULL DEFAULT 'draft',
+  legal_basis_assessment_id UUID NOT NULL REFERENCES legal_basis_assessment(id) ON DELETE RESTRICT,
+  approved_by     UUID REFERENCES "user"(id) ON DELETE SET NULL,
+  approved_at     TIMESTAMPTZ,
+  effective_from  TIMESTAMPTZ,
+  effective_until TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (status <> 'active' OR (approved_by IS NOT NULL AND approved_at IS NOT NULL AND effective_from IS NOT NULL)),
+  CHECK (effective_until IS NULL OR effective_from IS NULL OR effective_until > effective_from),
+  UNIQUE (allowlist_id, version_number)
+);
+CREATE UNIQUE INDEX uq_field_allowlist_one_active ON field_allowlist_version(allowlist_id) WHERE status = 'active';
+CREATE INDEX idx_field_allowlist_version_basis ON field_allowlist_version(legal_basis_assessment_id);
+
+CREATE TABLE field_allowlist_item (
+  allowlist_version_id UUID NOT NULL REFERENCES field_allowlist_version(id) ON DELETE CASCADE,
+  field_path      TEXT NOT NULL CHECK (field_path <> ''),
+  required        BOOLEAN NOT NULL DEFAULT false,
+  transformation TEXT CHECK (transformation IN ('none','mask','tokenize','truncate','aggregate')),
+  justification  TEXT NOT NULL,
+  PRIMARY KEY (allowlist_version_id, field_path)
+);
+
+CREATE TABLE sharing_event (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenant(id) ON DELETE RESTRICT,
+  partner_relationship_id UUID NOT NULL REFERENCES partner_relationship(id) ON DELETE RESTRICT,
+  purpose_id      UUID NOT NULL REFERENCES processing_purpose(id) ON DELETE RESTRICT,
+  legal_basis_assessment_id UUID NOT NULL REFERENCES legal_basis_assessment(id) ON DELETE RESTRICT,
+  allowlist_version_id UUID NOT NULL REFERENCES field_allowlist_version(id) ON DELETE RESTRICT,
+  subject_ref_hash TEXT NOT NULL CHECK (subject_ref_hash <> ''),
+  correlation_id  TEXT NOT NULL,
+  direction       TEXT NOT NULL CHECK (direction IN ('hub_to_spoke','spoke_to_hub')),
+  status          sharing_event_status NOT NULL,
+  field_paths     TEXT[] NOT NULL CHECK (cardinality(field_paths) > 0),
+  payload_digest  TEXT,
+  failure_code    TEXT,
+  occurred_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (status <> 'failed' OR failure_code IS NOT NULL),
+  UNIQUE (tenant_id, correlation_id)
+);
+CREATE INDEX idx_sharing_event_subject ON sharing_event(tenant_id, subject_ref_hash, occurred_at DESC);
+CREATE INDEX idx_sharing_event_partner ON sharing_event(partner_relationship_id, occurred_at DESC);
+CREATE INDEX idx_sharing_event_purpose ON sharing_event(purpose_id, occurred_at DESC);
+
+CREATE OR REPLACE FUNCTION reject_append_only_change() RETURNS trigger AS $$
+BEGIN
+  RAISE EXCEPTION '% is append-only; % is not permitted', TG_TABLE_NAME, TG_OP;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_sharing_event_append_only BEFORE UPDATE OR DELETE ON sharing_event FOR EACH ROW EXECUTE FUNCTION reject_append_only_change();
+
+CREATE TABLE dsar_propagation (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  request_id      UUID NOT NULL REFERENCES data_subject_request(id) ON DELETE CASCADE,
+  partner_relationship_id UUID NOT NULL REFERENCES partner_relationship(id) ON DELETE RESTRICT,
+  sharing_event_id UUID REFERENCES sharing_event(id) ON DELETE RESTRICT,
+  status          dsar_propagation_status NOT NULL DEFAULT 'pending',
+  external_reference TEXT,
+  sent_at         TIMESTAMPTZ,
+  acknowledged_at TIMESTAMPTZ,
+  fulfilled_at    TIMESTAMPTZ,
+  due_at          TIMESTAMPTZ NOT NULL,
+  failure_code    TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  version         INTEGER NOT NULL DEFAULT 1,
+  CHECK (status <> 'sent' OR sent_at IS NOT NULL),
+  CHECK (status <> 'acknowledged' OR acknowledged_at IS NOT NULL),
+  CHECK (status <> 'fulfilled' OR fulfilled_at IS NOT NULL),
+  CHECK (status <> 'failed' OR failure_code IS NOT NULL),
+  UNIQUE (request_id, partner_relationship_id)
+);
+CREATE INDEX idx_dsar_propagation_due ON dsar_propagation(status, due_at);
+CREATE TRIGGER trg_dsar_propagation_touch BEFORE UPDATE ON dsar_propagation FOR EACH ROW EXECUTE FUNCTION touch_row();
+
+CREATE TABLE automated_decision (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenant(id) ON DELETE CASCADE,
+  purpose_id      UUID NOT NULL REFERENCES processing_purpose(id) ON DELETE RESTRICT,
+  legal_basis_assessment_id UUID NOT NULL REFERENCES legal_basis_assessment(id) ON DELETE RESTRICT,
+  subject_ref_hash TEXT NOT NULL CHECK (subject_ref_hash <> ''),
+  model_ref       TEXT NOT NULL,
+  model_version   TEXT NOT NULL,
+  outcome         automated_decision_outcome NOT NULL,
+  reason_codes    TEXT[] NOT NULL DEFAULT '{}',
+  solely_automated BOOLEAN NOT NULL DEFAULT true,
+  materially_affects_subject BOOLEAN NOT NULL DEFAULT false,
+  review_available BOOLEAN NOT NULL DEFAULT true,
+  review_requested_at TIMESTAMPTZ,
+  reviewed_by     UUID REFERENCES "user"(id) ON DELETE SET NULL,
+  reviewed_at     TIMESTAMPTZ,
+  final_outcome   automated_decision_outcome,
+  occurred_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (NOT (solely_automated AND materially_affects_subject) OR review_available),
+  CHECK (reviewed_at IS NULL OR reviewed_by IS NOT NULL)
+);
+CREATE INDEX idx_automated_decision_subject ON automated_decision(tenant_id, subject_ref_hash, occurred_at DESC);
+CREATE INDEX idx_automated_decision_review ON automated_decision(review_requested_at) WHERE reviewed_at IS NULL;
+
+CREATE TABLE legacy_import_qualification (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  import_batch_id UUID NOT NULL REFERENCES import_batch(id) ON DELETE CASCADE,
+  purpose_id      UUID NOT NULL REFERENCES processing_purpose(id) ON DELETE RESTRICT,
+  legal_basis_assessment_id UUID NOT NULL REFERENCES legal_basis_assessment(id) ON DELETE RESTRICT,
+  status          legacy_qualification_status NOT NULL DEFAULT 'pending',
+  origin_verified BOOLEAN NOT NULL DEFAULT false,
+  origin_evidence_ref TEXT,
+  purpose_compatible BOOLEAN NOT NULL DEFAULT false,
+  suppression_checked BOOLEAN NOT NULL DEFAULT false,
+  wave_number     INTEGER NOT NULL CHECK (wave_number > 0),
+  wave_size       INTEGER NOT NULL CHECK (wave_size > 0),
+  qualified_rows  INTEGER NOT NULL DEFAULT 0 CHECK (qualified_rows >= 0),
+  rejected_rows   INTEGER NOT NULL DEFAULT 0 CHECK (rejected_rows >= 0),
+  approved_by     UUID REFERENCES "user"(id) ON DELETE SET NULL,
+  approved_at     TIMESTAMPTZ,
+  notes           TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  version         INTEGER NOT NULL DEFAULT 1,
+  CHECK (qualified_rows + rejected_rows <= wave_size),
+  CHECK (status <> 'approved' OR (origin_verified AND purpose_compatible AND suppression_checked AND approved_by IS NOT NULL AND approved_at IS NOT NULL)),
+  UNIQUE (import_batch_id, wave_number)
+);
+CREATE INDEX idx_legacy_qualification_status ON legacy_import_qualification(status, created_at);
+CREATE TRIGGER trg_legacy_import_qualification_touch BEFORE UPDATE ON legacy_import_qualification FOR EACH ROW EXECUTE FUNCTION touch_row();
 
 -- =====================================================================
 -- ComparableProperty

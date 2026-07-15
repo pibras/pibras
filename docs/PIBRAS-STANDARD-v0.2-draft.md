@@ -550,6 +550,12 @@ Essa decisão evita que o mesmo imóvel físico seja recriado a cada novo ciclo 
 
 LGPD não pode ser item de checklist. Precisa ser arquitetura.
 
+Os controles normativos de operação, incluindo classificação de CPF, legítimo interesse,
+decisões automatizadas, integração hub-and-spoke, Sync Service, sharing ledger, legado e
+higiene de superfícies, estão em [`privacy-operations.md`](privacy-operations.md). Seus termos
+**MUST**, **POLICY-SHALL**, **SHOULD** e **MAY** têm os significados definidos naquele
+documento. A classificação de risco PIBRAS não altera as categorias legais da LGPD.
+
 ## 7.1 Dados sensíveis e de alto risco
 
 Campos de maior cuidado:

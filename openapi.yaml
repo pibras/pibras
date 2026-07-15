@@ -18,6 +18,7 @@ tags:
   - name: Listings
   - name: ExposurePolicy
   - name: Conformance
+  - name: PrivacyOperations
 security:
   - bearerAuth: []
 paths:
@@ -111,6 +112,78 @@ paths:
           $ref: "#/components/responses/UnauthorizedResponse"
         "403":
           $ref: "#/components/responses/ForbiddenResponse"
+  /privacy/sharing-decisions:
+    post:
+      tags: [PrivacyOperations]
+      operationId: decideSharing
+      summary: Avalia previamente um compartilhamento e aplica default-deny.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SharingDecisionRequest"
+      responses:
+        "200":
+          description: Decisão reproduzível, vinculada à finalidade e à allowlist avaliadas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharingDecisionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+  /privacy/sharing-events:
+    post:
+      tags: [PrivacyOperations]
+      operationId: appendSharingEvent
+      summary: Registra no ledger um compartilhamento efetivamente realizado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SharingEvent"
+      responses:
+        "201":
+          description: Evento imutável registrado no ledger.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharingEvent"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+  /privacy/dsar-propagations:
+    post:
+      tags: [PrivacyOperations]
+      operationId: propagateDataSubjectRequest
+      summary: Registra e acompanha a propagação de uma solicitação do titular.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DSARPropagation"
+      responses:
+        "201":
+          description: Propagação vinculada ao parceiro e à solicitação de origem.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DSARPropagation"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -157,6 +230,46 @@ components:
       $ref: "./schema/mbras.schema.json#/$defs/ExposurePolicy"
     ConformanceTestCase:
       $ref: "./schema/mbras.schema.json#/$defs/ConformanceTestCase"
+    ProcessingPurpose:
+      $ref: "./schema/mbras.schema.json#/$defs/ProcessingPurpose"
+    LegalBasisAssessment:
+      $ref: "./schema/mbras.schema.json#/$defs/LegalBasisAssessment"
+    PartnerRelationship:
+      $ref: "./schema/mbras.schema.json#/$defs/PartnerRelationship"
+    FieldAllowlist:
+      $ref: "./schema/mbras.schema.json#/$defs/FieldAllowlist"
+    SharingEvent:
+      $ref: "./schema/mbras.schema.json#/$defs/SharingEvent"
+    DSARPropagation:
+      $ref: "./schema/mbras.schema.json#/$defs/DSARPropagation"
+    SharingDecisionRequest:
+      type: object
+      additionalProperties: false
+      required: [purpose, legal_basis_assessment, partner_relationship, field_allowlist]
+      properties:
+        purpose:
+          $ref: "#/components/schemas/ProcessingPurpose"
+        legal_basis_assessment:
+          $ref: "#/components/schemas/LegalBasisAssessment"
+        partner_relationship:
+          $ref: "#/components/schemas/PartnerRelationship"
+        field_allowlist:
+          $ref: "#/components/schemas/FieldAllowlist"
+    SharingDecisionResponse:
+      type: object
+      additionalProperties: false
+      required: [decision, evaluated_at, reason_codes]
+      properties:
+        decision:
+          type: string
+          enum: [allow, deny]
+        evaluated_at:
+          type: string
+          format: date-time
+        reason_codes:
+          type: array
+          items:
+            type: string
     Error:
       type: object
       additionalProperties: false
