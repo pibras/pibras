@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "release/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Contracts and reference DDL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: pibras
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pibras-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pibras"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGPASSWORD: pibras-ci
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.9.7"
+          python-version: "3.13.9"
+          enable-cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.22.3"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: |
+          uv sync --frozen
+          npm ci
+
+      - name: Run Python and TypeScript tests
+        run: |
+          uv run pytest
+          npm run typecheck
+          npm run test:types
+
+      - name: Validate canonical contracts
+        run: |
+          uv run scripts/validate_conformance.py
+          uv run scripts/validate_openapi.py
+          uv run openapi-spec-validator openapi.yaml
+          uv run scripts/check_contract_parity.py
+          uv run scripts/check_domain_invariants.py --entities tests/contracts/aligned/entities
+
+      - name: Validate governance gates
+        run: |
+          uv run scripts/check_identity.py
+          uv run scripts/validate_release_policy.py governance/release-policy.yaml
+
+      - name: Apply reference DDL to PostgreSQL 16
+        run: >-
+          psql -h 127.0.0.1 -U postgres -d pibras
+          -v ON_ERROR_STOP=1 -f db/schema.sql
