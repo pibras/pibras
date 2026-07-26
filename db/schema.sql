@@ -526,8 +526,41 @@ CREATE TABLE ownership (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   version       INTEGER NOT NULL DEFAULT 1,
   record_state  record_state NOT NULL DEFAULT 'active',
-  CHECK (unit_id IS NOT NULL OR property_id IS NOT NULL)
+  -- XOR: a titularidade recai sobre a unidade física OU sobre o ciclo
+  -- comercial, nunca sobre ambos. Vincular os dois torna ambígua a soma
+  -- de participação e duplica a mesma titularidade em dois eixos.
+  CHECK (num_nonnulls(unit_id, property_id) = 1)
 );
+-- A soma de participação ativa por recurso não pode exceder 100%. Um CHECK
+-- de tabela não alcança outras linhas, então a regra vive em trigger.
+-- Linhas com ownership_pct NULL (participação não declarada) são ignoradas.
+CREATE OR REPLACE FUNCTION enforce_ownership_total() RETURNS trigger AS $$
+DECLARE
+  total NUMERIC;
+BEGIN
+  SELECT COALESCE(SUM(o.ownership_pct), 0) INTO total
+  FROM ownership o
+  WHERE o.record_state = 'active'
+    AND o.ownership_pct IS NOT NULL
+    AND o.owner_role = 'owner'
+    AND (
+      (NEW.unit_id     IS NOT NULL AND o.unit_id     = NEW.unit_id) OR
+      (NEW.property_id IS NOT NULL AND o.property_id = NEW.property_id)
+    );
+
+  IF total > 100 THEN
+    RAISE EXCEPTION
+      'aggregate ownership for this resource would reach % percent, exceeding 100',
+      total;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE CONSTRAINT TRIGGER trg_ownership_total
+  AFTER INSERT OR UPDATE ON ownership
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE FUNCTION enforce_ownership_total();
+
 CREATE INDEX idx_ownership_party ON ownership(party_id);
 CREATE INDEX idx_ownership_unit ON ownership(unit_id);
 CREATE INDEX idx_ownership_property ON ownership(property_id);
@@ -598,6 +631,7 @@ CREATE TABLE media_asset (
   building_id  UUID REFERENCES building(id) ON DELETE CASCADE,
   unit_id      UUID REFERENCES unit(id) ON DELETE CASCADE,
   property_id  UUID REFERENCES property(id) ON DELETE CASCADE,
+  listing_id   UUID REFERENCES listing(id) ON DELETE CASCADE,
   media_type   media_type NOT NULL,
   media_role   media_role NOT NULL DEFAULT 'gallery',
   url          TEXT NOT NULL,
@@ -619,15 +653,20 @@ CREATE TABLE media_asset (
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   version      INTEGER NOT NULL DEFAULT 1,
   record_state record_state NOT NULL DEFAULT 'active',
+  -- Cada escopo exige o seu próprio vínculo. Mídia de listing precisa de
+  -- listing_id real: sem ele não é possível representar ordenação por
+  -- portal, direitos por canal ou seleção específica do anúncio.
   CHECK (
-    (scope = 'building'  AND building_id IS NOT NULL) OR
-    (scope = 'unit'      AND unit_id     IS NOT NULL) OR
-    (scope IN ('property','listing') AND property_id IS NOT NULL)
+    (scope = 'building' AND building_id IS NOT NULL) OR
+    (scope = 'unit'     AND unit_id     IS NOT NULL) OR
+    (scope = 'property' AND property_id IS NOT NULL) OR
+    (scope = 'listing'  AND listing_id  IS NOT NULL)
   )
 );
 CREATE INDEX idx_media_building ON media_asset(building_id);
 CREATE INDEX idx_media_unit ON media_asset(unit_id);
 CREATE INDEX idx_media_property ON media_asset(property_id);
+CREATE INDEX idx_media_listing ON media_asset(listing_id);
 CREATE INDEX idx_media_checksum ON media_asset(checksum) WHERE checksum IS NOT NULL;
 CREATE TRIGGER trg_media_touch BEFORE UPDATE ON media_asset FOR EACH ROW EXECUTE FUNCTION touch_row();
 
@@ -1122,8 +1161,16 @@ CREATE TABLE conformance_test_case (
 );
 
 -- =====================================================================
--- Read model: view de leitura property_full (site / portais / CRM)
--- ExposureRule segue compatível; ExposurePolicy é o alvo v0.2 na borda de leitura.
+-- Read model INTERNO: property_full
+--
+-- ATENÇÃO: esta view NÃO é uma superfície de publicação.
+-- Ela contém campos restritos (matrícula, coordenadas exatas, preço,
+-- scores internos) e existe apenas para consumo interno autenticado.
+--
+-- Publicação para site, portais ou parceiros DEVE passar por uma
+-- projeção governada por ExposurePolicy — ver property_public abaixo.
+-- Conceder SELECT desta view a papéis públicos viola a política de
+-- exposição do padrão.
 -- =====================================================================
 CREATE MATERIALIZED VIEW property_full AS
 SELECT
@@ -1172,5 +1219,70 @@ CREATE UNIQUE INDEX idx_property_full_id ON property_full(id);
 CREATE INDEX idx_property_full_city ON property_full(city, state);
 CREATE INDEX idx_property_full_price ON property_full(asking_price_amount);
 -- Atualize com: REFRESH MATERIALIZED VIEW CONCURRENTLY mbras.property_full;
+
+-- =====================================================================
+-- Projeção pública governada: property_public
+--
+-- Superfície de leitura destinada a site, portais e parceiros. Deriva de
+-- property_full mas remove campos restritos e aplica a decisão de
+-- exposição vigente:
+--   - matricula: omitida (identificador cartorial, nunca público);
+--   - latitude/longitude exatas: substituídas por coordenadas
+--     arredondadas (~1 km) quando a política permite, respeitando
+--     geo_precision;
+--   - scores internos (liquidity, match, rarity, off_market): omitidos;
+--   - preço: exposto apenas quando price_display = 'visible'.
+--
+-- Apenas imóveis com published = true e exposure_level público entram.
+-- =====================================================================
+CREATE VIEW property_public AS
+SELECT DISTINCT ON (pf.id)
+  pf.id,
+  pf.code,
+  pf.transaction_type,
+  pf.property_status,
+  pf.availability,
+  -- O listing publicado decide se o preço aparece.
+  CASE WHEN l.price_display = 'visible'
+       THEN COALESCE(l.display_price_amount, pf.asking_price_amount) END
+    AS asking_price_amount,
+  CASE WHEN l.price_display = 'visible'
+       THEN COALESCE(l.display_price_currency, pf.asking_price_currency) END
+    AS asking_price_currency,
+  pf.property_type,
+  pf.usable_area_m2,
+  pf.total_area_m2,
+  pf.bedrooms,
+  pf.suites,
+  pf.bathrooms,
+  pf.parking_spaces,
+  pf.sun_orientation,
+  pf.view_type,
+  pf.city,
+  pf.state,
+  pf.neighborhood_id,
+  -- Coordenadas degradadas (~1 km) sempre que o listing não autorizar
+  -- endereço completo, e nunca mais precisas que a origem.
+  CASE WHEN l.address_display = 'full'
+       THEN pf.latitude
+       ELSE round(pf.latitude::numeric, 2)::double precision END
+    AS latitude_approx,
+  CASE WHEN l.address_display = 'full'
+       THEN pf.longitude
+       ELSE round(pf.longitude::numeric, 2)::double precision END
+    AS longitude_approx,
+  pf.building_name,
+  pf.amenities,
+  pf.updated_at
+FROM property_full pf
+JOIN listing l ON l.property_id = pf.id
+WHERE pf.published = true
+  AND pf.record_state = 'active'
+  AND l.listing_status = 'published'
+  AND l.record_state = 'active'
+ORDER BY pf.id, l.updated_at DESC;
+
+COMMENT ON VIEW property_public IS
+  'Projeção pública governada. Sem matrícula, sem coordenadas exatas, sem scores internos.';
 
 COMMIT;
