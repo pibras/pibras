@@ -258,5 +258,25 @@
       "types",
       "privacy-operations"
     ]
+  },
+  {
+    "id": "schema-org-export-public-projection",
+    "title": "schema.org export derives from the governed property_public surface",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/schema-org.property-public.json",
+    "expected_result": "valid",
+    "applies_to": [
+      "mappings"
+    ]
+  },
+  {
+    "id": "schema-org-export-rejects-restricted-fields",
+    "title": "schema.org export rejects records carrying matricula, exact coordinates or internal scores",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/schema-org.leaked-restricted-fields.invalid.json",
+    "expected_result": "invalid",
+    "applies_to": [
+      "mappings"
+    ]
   }
 ]
