@@ -1,0 +1,32 @@
+{
+  "id": "schema-org-export-public-projection",
+  "record": {
+    "id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+    "code": "MB18495",
+    "transaction_type": "sale",
+    "property_status": "available",
+    "availability": "available",
+    "asking_price_amount": 1750000000,
+    "asking_price_currency": "BRL",
+    "property_type": "penthouse",
+    "usable_area_m2": 420,
+    "total_area_m2": 610,
+    "bedrooms": 4,
+    "suites": 3,
+    "bathrooms": 6,
+    "parking_spaces": 5,
+    "sun_orientation": "morning",
+    "view_type": "parque",
+    "city": "São Paulo",
+    "state": "SP",
+    "neighborhood_id": "8c1f6a52-1d0e-4a7b-9e33-2b6d4c1f7a90",
+    "latitude_approx": -23.58,
+    "longitude_approx": -46.68,
+    "building_name": "Edifício Ipê",
+    "amenities": [
+      "piscina",
+      "academia"
+    ],
+    "updated_at": "2026-07-10T12:00:00Z"
+  }
+}
