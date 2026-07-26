@@ -15,10 +15,10 @@ export const AuditEvent = z.object({
   change_type: AuditChangeTypeSchema,
   trust_tier: z.number().int().min(1).max(6).nullish(),
   occurred_at: z.string().datetime(),
-});
+}).strict();
 
 export const ExposureRule = z.object({
   id: z.string().uuid(),
   exposure_level: z.enum(["public", "restricted", "private"]),
-  field_visibility: z.record(z.string(), z.unknown()).default({}),
-});
+  field_visibility: z.record(z.string(), z.unknown()),
+}).strict();

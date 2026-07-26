@@ -1,5 +1,12 @@
 {
-  "$comment": "FROZEN expected-red manifest for tests/contracts/pre-reconciliation fixtures. Never refresh. Identity rules (rule_class=identity, e.g. PIBRAS-IDN-001) are deliberately excluded.",
+  "$comment": "FROZEN expected-red manifest for tests/contracts/pre-reconciliation fixtures. Never refresh to make a failing run pass. Identity rules (rule_class=identity, e.g. PIBRAS-IDN-001) are deliberately excluded.",
+  "$amendments": [
+    {
+      "date": "2026-07-10",
+      "reason": "PIBRAS-PAR-006 (unknown-field strictness) was added to the parity checker in the P2 parity work. The pre-reconciliation fixture always contained these two divergences; the previous checker was structurally unable to detect them. The fixture bytes are unchanged - only the checker's coverage grew - so these entries record newly-visible pre-existing defects rather than relaxing the gate.",
+      "added_findings": ["PIBRAS-PAR-006 (AuditEvent)", "PIBRAS-PAR-006 (ExposureRule)"]
+    }
+  ],
   "severity_enum": ["critical", "high", "medium", "low", "info"],
   "excluded_rule_classes": ["identity"],
   "checks": {
@@ -8,7 +15,9 @@
         { "id": "PIBRAS-PAR-001", "severity": "high" },
         { "id": "PIBRAS-PAR-002", "severity": "medium" },
         { "id": "PIBRAS-PAR-003", "severity": "medium" },
-        { "id": "PIBRAS-PAR-004", "severity": "medium" }
+        { "id": "PIBRAS-PAR-004", "severity": "medium" },
+        { "id": "PIBRAS-PAR-006", "severity": "medium" },
+        { "id": "PIBRAS-PAR-006", "severity": "medium" }
       ]
     },
     "domain-invariants": {

@@ -42,8 +42,9 @@ test("Money rejects fractional centavos", () => {
   assert.throws(() => Money.parse(payload))
 })
 
-test("ExposurePolicy defaults to deny decisions", () => {
-  // Given: an exposure policy payload without an explicit default_decision.
+test("ExposurePolicy requires an explicit exposure decision", () => {
+  // Given: a payload omitting default_decision and audit_sensitive_reads,
+  // both of which the canonical JSON Schema lists as required.
   const payload = {
     id: UUID,
     tenant_id: null,
@@ -54,11 +55,15 @@ test("ExposurePolicy defaults to deny decisions", () => {
     updated_at: TIMESTAMP,
   }
 
-  // When: the TypeScript/Zod schema parses the payload.
-  const parsed = ExposurePolicy.parse(payload)
+  // When/Then: Zod rejects it exactly as the JSON Schema does. Supplying a
+  // silent default here would let a payload pass the TypeScript SDK and fail
+  // canonical validation, so exposure decisions must always be explicit.
+  assert.throws(() => ExposurePolicy.parse(payload))
+})
 
-  // Then: the parsed policy is default-deny and audits sensitive reads.
-  const expected = {
+test("ExposurePolicy accepts an explicit deny policy and rejects unknown fields", () => {
+  // Given: the same payload with every required exposure field stated.
+  const payload = {
     id: UUID,
     tenant_id: null,
     resource_type: "listing",
@@ -72,7 +77,15 @@ test("ExposurePolicy defaults to deny decisions", () => {
     created_at: TIMESTAMP,
     updated_at: TIMESTAMP,
   } satisfies ExposurePolicyValue
-  assert.deepEqual(parsed, expected)
+
+  // When: the schema parses the fully specified policy.
+  const parsed = ExposurePolicy.parse(payload)
+
+  // Then: it round-trips unchanged.
+  assert.deepEqual(parsed, payload)
+
+  // And: unknown fields are rejected, matching additionalProperties: false.
+  assert.throws(() => ExposurePolicy.parse({ ...payload, unexpected_field: "x" }))
 })
 
 test("ConformanceTestCase defaults applies_to to an empty list", () => {

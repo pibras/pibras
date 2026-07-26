@@ -104,13 +104,13 @@ const dateOnly = z.string().date();
 export const Money = z.object({
   amount: z.number().int(),
   currency: Currency,
-});
+}).strict();
 
 export const ExternalId = z.object({
   namespace: z.string(),
   key: z.string(),
   value: z.string(),
-});
+}).strict();
 
 export const Provenance = z.object({
   source_system: SourceSystem,
@@ -121,12 +121,12 @@ export const Provenance = z.object({
   ingested_by: z.string().nullish(),
   sync_batch_id: uuid.nullish(),
   raw_payload_ref: z.string().nullish(),
-});
+}).strict();
 
 export const DataQuality = z.object({
   missing_fields: z.array(z.string()).default([]),
   warnings: z.array(z.string()).default([]),
-});
+}).strict();
 
 export const AuditStamp = z.object({
   created_at: datetime,
@@ -137,7 +137,7 @@ export const AuditStamp = z.object({
   record_state: RecordState,
   completeness_score: z.number().int().min(0).max(100).nullish(),
   data_quality: DataQuality.optional(),
-});
+}).strict();
 
 export const Address = z.object({
   street: z.string().nullish(),
@@ -153,7 +153,7 @@ export const Address = z.object({
   longitude: z.number().min(-180).max(180).nullish(),
   geo_precision: GeoPrecision.optional(),
   formatted: z.string().nullish(),
-});
+}).strict();
 
 /* ------------------------------------------------------------------ *
  * Entidades
@@ -165,10 +165,10 @@ export const Organization = z.object({
   legal_name: z.string().nullish(),
   tax_id: z.string().nullish(),
   website_url: z.string().url().nullish(),
-  country: z.string().length(2).default("BR"),
+  country: z.string().length(2),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const Tenant = z.object({
   id: uuid,
@@ -178,10 +178,10 @@ export const Tenant = z.object({
   data_processor_org_id: uuid.nullish(),
   retention_policy_id: uuid.nullish(),
   international_transfer_allowed: z.boolean().default(false),
-  active: z.boolean().default(true),
+  active: z.boolean(),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const User = z.object({
   id: uuid,
@@ -189,11 +189,11 @@ export const User = z.object({
   organization_id: uuid.nullish(),
   name: z.string(),
   email: z.string().email().nullish(),
-  roles: z.array(z.string()).default([]),
-  active: z.boolean().default(true),
+  roles: z.array(z.string()),
+  active: z.boolean(),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const Building = z.object({
   id: uuid,
@@ -210,7 +210,7 @@ export const Building = z.object({
   description: z.string().nullish(),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Unit = z.object({
   id: uuid,
@@ -242,21 +242,21 @@ export const Unit = z.object({
   iptu_annual: Money.optional(),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const PropertyOwnerLink = z.object({
   owner_id: uuid,
   ownership_pct: z.number().min(0).max(100).nullish(),
   owner_role: OwnerRole.default("owner"),
   is_primary: z.boolean().default(false),
-});
+}).strict();
 
 export const PropertyBrokerLink = z.object({
   broker_id: uuid,
   broker_role: BrokerRole.default("listing"),
   is_primary: z.boolean().default(false),
   assigned_at: datetime.nullish(),
-});
+}).strict();
 
 export const PropertyIntelligence = z.object({
   property_id: uuid.nullish(),
@@ -277,7 +277,7 @@ export const PropertyIntelligence = z.object({
   last_computed_at: datetime.nullish(),
   computed_by: ComputedBy.optional(),
   confidence: z.number().int().min(0).max(100).nullish(),
-});
+}).strict();
 
 export const Property = z.object({
   id: uuid,
@@ -303,7 +303,7 @@ export const Property = z.object({
   intelligence: PropertyIntelligence.optional(),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Listing = z.object({
   id: uuid,
@@ -327,7 +327,7 @@ export const Listing = z.object({
   external_url: z.string().url().nullish(),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Owner = z.object({
   id: uuid,
@@ -344,7 +344,7 @@ export const Owner = z.object({
   notes: z.string().nullish(),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Party = z.object({
   id: uuid,
@@ -363,7 +363,7 @@ export const Party = z.object({
   data_subject_request_ids: z.array(uuid).default([]),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Ownership = z.object({
   id: uuid,
@@ -377,7 +377,7 @@ export const Ownership = z.object({
   ends_at: dateOnly.nullish(),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Broker = z.object({
   id: uuid,
@@ -389,7 +389,7 @@ export const Broker = z.object({
   active: z.boolean().default(true),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const PublicationChannel = z.object({
   id: uuid,
@@ -397,8 +397,8 @@ export const PublicationChannel = z.object({
   name: z.string(),
   channel_type: ChannelType,
   config: z.record(z.string(), z.unknown()).optional(),
-  active: z.boolean().default(true),
-});
+  active: z.boolean(),
+}).strict();
 
 export const MediaAsset = z.object({
   id: uuid,
@@ -422,7 +422,7 @@ export const MediaAsset = z.object({
   ai_tags: z.array(z.string()).default([]),
   provenance: Provenance,
   audit: AuditStamp,
-});
+}).strict();
 
 export const Document = z.object({
   id: uuid,
@@ -438,7 +438,7 @@ export const Document = z.object({
   created_at: datetime,
   updated_at: datetime,
   version: z.number().int().min(1),
-});
+}).strict();
 
 export const ExposureRule = z.object({
   id: uuid.optional(),
@@ -449,7 +449,7 @@ export const ExposureRule = z.object({
   price_display: PriceDisplay.optional(),
   address_display: AddressDisplay.optional(),
   requires_approval: z.boolean().default(false),
-});
+}).strict();
 
 export const ExposurePolicyRule = z.object({
   id: uuid.optional(),
@@ -460,7 +460,7 @@ export const ExposurePolicyRule = z.object({
   roles: z.array(z.string()).default([]),
   conditions: z.record(z.string(), z.unknown()).default({}),
   reason_code: z.string().nullish(),
-});
+}).strict();
 
 export const ExposurePolicy = z.object({
   id: uuid,
@@ -471,11 +471,11 @@ export const ExposurePolicy = z.object({
   rules: z.array(ExposurePolicyRule).default([]),
   requires_approval_for: z.array(PolicyAction).default([]),
   allowed_channels: z.array(z.string()).default([]),
-  default_decision: PolicyDecision.default("deny"),
-  audit_sensitive_reads: z.boolean().default(true),
+  default_decision: PolicyDecision,
+  audit_sensitive_reads: z.boolean(),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const DataSubjectRequest = z.object({
   id: uuid,
@@ -492,7 +492,7 @@ export const DataSubjectRequest = z.object({
   resolution_action: RetentionAction.nullish(),
   affected_record_ids: z.array(uuid).default([]),
   notes: z.string().nullish(),
-});
+}).strict();
 
 export const RetentionPolicy = z.object({
   id: uuid,
@@ -505,7 +505,7 @@ export const RetentionPolicy = z.object({
   applies_to: z.array(z.string()).default([]),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const ImportSource = z.object({
   id: uuid,
@@ -514,11 +514,11 @@ export const ImportSource = z.object({
   source_type: ImportSourceType,
   auth_type: z.string().nullish(),
   base_url: z.string().url().nullish(),
-  active: z.boolean().default(true),
+  active: z.boolean(),
   last_sync_at: datetime.nullish(),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const ImportBatch = z.object({
   id: uuid,
@@ -535,7 +535,7 @@ export const ImportBatch = z.object({
   finished_at: datetime.nullish(),
   report_url: z.string().url().nullish(),
   created_by: z.string().nullish(),
-});
+}).strict();
 
 export const ImportMapping = z.object({
   id: uuid,
@@ -543,10 +543,10 @@ export const ImportMapping = z.object({
   external_field: z.string(),
   pibras_field: z.string(),
   transform_rule: z.string().nullish(),
-  required: z.boolean().default(false),
+  required: z.boolean(),
   created_at: datetime,
   updated_at: datetime,
-});
+}).strict();
 
 export const AuditEvent = z.object({
   id: z.number().int().optional(),
@@ -561,7 +561,7 @@ export const AuditEvent = z.object({
   actor: z.string().nullish(),
   sync_batch_id: uuid.nullish(),
   occurred_at: datetime,
-});
+}).strict();
 
 /** Catálogo versionável de finalidades; não contém dados pessoais. */
 export const ProcessingPurpose = z.object({
@@ -698,7 +698,7 @@ export const ConformanceTestCase = z.object({
   fixture_path: z.string(),
   expected_result: z.enum(["valid", "invalid"]),
   applies_to: z.array(z.string()).default([]),
-});
+}).strict();
 
 export const Neighborhood = z.object({
   id: uuid,
@@ -712,12 +712,12 @@ export const Neighborhood = z.object({
   polygon: z.unknown().nullish(), // GeoJSON Polygon
   demand_index: z.number().nullish(),
   avg_price_m2: Money.optional(),
-});
+}).strict();
 
 export const Geography = Neighborhood.extend({
-  geography_type: GeographyType.default("neighborhood"),
+  geography_type: GeographyType,
   parent_id: uuid.nullish(),
-});
+}).strict();
 
 /* ------------------------------------------------------------------ *
  * Tipos inferidos
