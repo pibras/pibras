@@ -74,6 +74,79 @@ def ts_field_expr(body: str, field: str) -> str:
     return match.group(1).rstrip(",")
 
 
+def ts_schema_blocks(ts: str) -> dict[str, dict[str, str]]:
+    """Map every exported Zod schema to its body and trailing modifiers.
+
+    Covers both `z.object({...})` and `Base.extend({...})` forms, with or
+    without a `.strict()` suffix, so no declaration style escapes the checks.
+    """
+    pattern = re.compile(
+        r"export const (\w+) = (?:z\.object|\w+\.extend)\(\{(.*?)\n\}\)([^;]*);",
+        re.DOTALL,
+    )
+    return {
+        m.group(1): {"body": m.group(2), "modifiers": m.group(3)}
+        for m in pattern.finditer(ts)
+    }
+
+
+def check_required_field_defaults(schema: dict, ts: str) -> list[dict]:
+    """A JSON-required field must never carry a silent Zod default.
+
+    Otherwise the SDK accepts a payload the canonical schema rejects.
+    """
+    findings: list[dict] = []
+    blocks = ts_schema_blocks(ts)
+    for name, definition in sorted(schema.get("$defs", {}).items()):
+        if not isinstance(definition, dict) or definition.get("type") != "object":
+            continue
+        block = blocks.get(name)
+        if block is None:
+            continue
+        for field in sorted(definition.get("required") or []):
+            expr = ts_field_expr(block["body"], field)
+            if expr and ".default(" in expr:
+                findings.append(
+                    finding(
+                        "PIBRAS-PAR-005",
+                        "high",
+                        "parity",
+                        f"{name}.{field} is required in {SCHEMA_PATH} but "
+                        f"{TYPES_PATH} supplies a Zod default, so the SDK accepts "
+                        "payloads canonical validation rejects",
+                        {"entity": name, "field": field, "zod_expression": expr},
+                    )
+                )
+    return findings
+
+
+def check_unknown_field_strictness(schema: dict, ts: str) -> list[dict]:
+    """`additionalProperties: false` must map to a strict Zod object."""
+    findings: list[dict] = []
+    blocks = ts_schema_blocks(ts)
+    for name, definition in sorted(schema.get("$defs", {}).items()):
+        if not isinstance(definition, dict):
+            continue
+        if definition.get("additionalProperties") is not False:
+            continue
+        block = blocks.get(name)
+        if block is None:
+            continue
+        if ".strict()" not in block["modifiers"]:
+            findings.append(
+                finding(
+                    "PIBRAS-PAR-006",
+                    "medium",
+                    "parity",
+                    f"{name} sets additionalProperties: false in {SCHEMA_PATH} but "
+                    f"{TYPES_PATH} declares it without .strict(), so unknown fields "
+                    "silently pass the SDK",
+                    {"entity": name, "modifiers": block["modifiers"].strip()},
+                )
+            )
+    return findings
+
+
 def run_checks(root: Path) -> list[dict]:
     findings: list[dict] = []
 
@@ -202,6 +275,9 @@ def run_checks(root: Path) -> list[dict]:
                 },
             )
         )
+
+    findings.extend(check_required_field_defaults(schema, ts))
+    findings.extend(check_unknown_field_strictness(schema, ts))
 
     return findings
 
