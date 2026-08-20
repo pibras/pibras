@@ -27,4 +27,6 @@ Estes fixtures documentam comportamentos que implementações PIBRAS devem prese
 uv run scripts/validate_conformance.py
 ```
 
+A segurança comportamental de `property_public` também possui um teste PostgreSQL em `tests/postgres/property_public.sql`. Ele deve ser executado após aplicar `db/schema.sql` a um PostgreSQL 16 limpo, com `ON_ERROR_STOP` habilitado.
+
 O runner valida envelopes com `schema_ref` contra `schema/mbras.schema.json`, garante que o índice `conformance-cases.json` aponte para fixtures rastreáveis, valida XML de portal, executa as decisões esperadas de `ExposurePolicy` e roda o exportador schema.org com round-trip e casos negativos.
