@@ -57,7 +57,7 @@ export interface MediaVariant {
 }
 
 /**
- * Definições de variantes padrão MBRAS para processamento de imagens.
+ * Definições de variantes padrão PIBRAS para processamento de imagens.
  */
 export const MEDIA_VARIANTS = {
   thumbnail: { width: 400, height: 300, quality: 80, format: "webp" },
@@ -68,20 +68,26 @@ export const MEDIA_VARIANTS = {
 
 /**
  * Configuração de watermark por canal de distribuição.
+ *
+ * `text` usa o placeholder OPERATOR_BRAND, substituído pelo nome do
+ * operador em tempo de execução. O padrão é neutro: nenhuma marca de
+ * patrocinador é embutida no código.
  */
+export const OPERATOR_BRAND = "{{OPERATOR_BRAND}}";
+
 export const WATERMARK_PROFILES = {
   portal: {
-    text: "MBRAS",
+    text: OPERATOR_BRAND,
     position: "bottom-right" as const,
     opacity: 0.35,
   },
   website: {
-    text: "MBRAS",
+    text: OPERATOR_BRAND,
     position: "bottom-right" as const,
     opacity: 0.25,
   },
   off_market_pdf: {
-    text: "CONFIDENCIAL • MBRAS",
+    text: `CONFIDENCIAL • ${OPERATOR_BRAND}`,
     position: "tiled" as const,
     opacity: 0.12,
   },

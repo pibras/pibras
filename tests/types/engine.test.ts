@@ -19,6 +19,7 @@ import {
   buildStorageKey,
   mimeToExtension,
   detectMediaType,
+  OPERATOR_BRAND,
 } from "../../src/index.ts";
 import type { ExposurePolicy } from "../../types/mbras.ts";
 import { TRUST_TIERS } from "../../types/mbras.ts";
@@ -119,7 +120,7 @@ test("SurvivorshipArbitrator protects proprietary data and creates PendingChange
     exclusive: true,
   };
 
-  // 1. Atualização externa (Kenlo: tier 4) tentando alterar preço de dado aprovado pela MBRAS (tier 2)
+  // 1. Atualização externa (Kenlo: tier 4) tentando alterar preço de dado aprovado internamente (tier 2)
   const result = SurvivorshipArbitrator.arbitrate({
     entity_type: "property",
     entity_id: "prop-uuid-1",
@@ -551,7 +552,7 @@ test("MediaProcessor watermark profiles respect channel configuration", () => {
     channel: "portal",
   });
   assert.ok(portalJob !== null);
-  assert.equal(portalJob!.params.watermark_text, "MBRAS");
+  assert.equal(portalJob!.params.watermark_text, OPERATOR_BRAND);
   assert.equal(portalJob!.params.watermark_opacity, 0.35);
 
   const offMarketJob = MediaProcessor.createWatermarkJob({
@@ -560,7 +561,7 @@ test("MediaProcessor watermark profiles respect channel configuration", () => {
     channel: "off_market_pdf",
   });
   assert.ok(offMarketJob !== null);
-  assert.equal(offMarketJob!.params.watermark_text, "CONFIDENCIAL \u2022 MBRAS");
+  assert.equal(offMarketJob!.params.watermark_text, `CONFIDENCIAL \u2022 ${OPERATOR_BRAND}`);
   assert.equal(offMarketJob!.params.watermark_position, "tiled");
 
   // CRM channel has no watermark

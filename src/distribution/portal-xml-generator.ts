@@ -67,7 +67,7 @@ export class PortalXMLGenerator {
       lines.push("  <Listing>");
       lines.push(`    <ExternalId namespace="mbras" key="property_code">${escapeXml(code)}</ExternalId>`);
       lines.push(`    <TransactionType>${escapeXml(p.transaction_type ?? "sale")}</TransactionType>`);
-      lines.push(`    <Title>${escapeXml(p.headline ?? "Imóvel MBRAS")}</Title>`);
+      lines.push(`    <Title>${escapeXml(p.headline ?? "Imóvel")}</Title>`);
       lines.push(`    <PriceDisplay>${priceDisplay}</PriceDisplay>`);
       if (p.asking_price) {
         lines.push(`    <Price>${(p.asking_price.amount / 100).toFixed(0)}</Price>`);

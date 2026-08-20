@@ -12,7 +12,7 @@ export interface FieldAuthorityRule {
 }
 
 /**
- * Default MBRAS Field Authority Matrix.
+ * Default PIBRAS Field Authority Matrix.
  * Defines per-field, per-entity write authority.
  * Lower trust tier systems attempting to write protected fields
  * will have their changes routed through the fallback_action.
