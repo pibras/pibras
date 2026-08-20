@@ -1,5 +1,7 @@
 {
   "id": "schema-org-export-public-projection",
+  "expected_result": "valid",
+  "expected_price": "17500000.00",
   "record": {
     "id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
     "code": "MB18495",

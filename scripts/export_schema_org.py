@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Final
 
@@ -99,6 +100,27 @@ ROUND_TRIP_FIELDS: Final = frozenset(
 
 class ExportError(Exception):
     """Raised when the input is not a governed public record."""
+
+
+def price_from_centavos(value: Any) -> str:
+    """Serialize integer centavos as an exact schema.org decimal Text value."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ExportError("asking_price_amount must be integer centavos")
+    return format(Decimal(value).scaleb(-2), "f")
+
+
+def centavos_from_price(value: Any) -> int:
+    """Recover centavos without introducing binary floating-point arithmetic."""
+    if isinstance(value, float):
+        raise ValueError("schema.org price must not use binary float")
+    try:
+        price = value if isinstance(value, Decimal) else Decimal(value)
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ValueError(f"invalid schema.org price {value!r}") from exc
+    centavos = price.scaleb(2)
+    if centavos != centavos.to_integral_value():
+        raise ValueError(f"schema.org price has sub-cent precision: {value!r}")
+    return int(centavos)
 
 
 def validate_input(record: dict[str, Any]) -> None:
@@ -184,8 +206,9 @@ def build_offers(record: dict[str, Any]) -> list[dict[str, Any]]:
             offer["availability"] = availability
         amount = record.get("asking_price_amount")
         if amount is not None:
-            # PIBRAS money is centavos; schema.org price is a decimal amount.
-            offer["price"] = round(amount / 100, 2)
+            # schema.org accepts Text for price. A decimal string preserves the
+            # exact integer-cent amount without passing through binary float.
+            offer["price"] = price_from_centavos(amount)
             offer["priceCurrency"] = record.get("asking_price_currency", "BRL")
         offers.append(offer)
     return offers
@@ -229,7 +252,10 @@ def round_trip(record: dict[str, Any], document: dict[str, Any]) -> list[str]:
             break
 
     if offers and "price" in offers[0]:
-        recovered["asking_price_amount"] = int(round(offers[0]["price"] * 100))
+        try:
+            recovered["asking_price_amount"] = centavos_from_price(offers[0]["price"])
+        except ValueError as exc:
+            recovered["asking_price_amount"] = f"<invalid price: {exc}>"
         recovered["asking_price_currency"] = offers[0].get("priceCurrency")
 
     mismatches: list[str] = []

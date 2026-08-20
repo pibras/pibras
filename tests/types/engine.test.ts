@@ -614,6 +614,7 @@ test("UnitMatcher scores IPTU, condomínio, and pHash visual signals", () => {
     complemento: "Apto 201",
     bairro: "Jardim Europa",
     cidade: "São Paulo",
+    area_util: 300,
     valor: 32000000,
   });
 
@@ -645,9 +646,10 @@ test("UnitMatcher scores IPTU, condomínio, and pHash visual signals", () => {
 
   const result = UnitMatcher.match(incomingWithHashes, existing);
 
-  // Score: address(0.50) + IPTU(0.05) + condo(0.05) + pHash(0.10) = 0.70
-  // No unit_number match because GenericCSVMapper maps "complemento" to address.complement, not unit_number
-  assert.ok(result.confidence >= 0.65, `Expected >= 0.65 confidence, got ${result.confidence}`);
+  // Score: address(0.50) + area(0.15) + IPTU(0.05) + condo(0.05)
+  // + pHash(0.10) = 0.85, inside the normative 0.75–0.95 review band.
+  assert.ok(result.confidence >= 0.75 && result.confidence < 0.95,
+    `Expected review-band confidence, got ${result.confidence}`);
   assert.equal(result.review_state, "needs_review");
   assert.ok(result.match_reasons.some((r) => r.includes("IPTU")), "Should include IPTU signal");
   assert.ok(result.match_reasons.some((r) => r.includes("Condo fee")), "Should include Condo fee signal");

@@ -265,6 +265,7 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/schema-org.property-public.json",
     "expected_result": "valid",
+    "validator": "schema-org",
     "applies_to": [
       "mappings"
     ]
@@ -275,8 +276,36 @@
     "version": "0.2-draft",
     "fixture_path": "tests/golden/schema-org.leaked-restricted-fields.invalid.json",
     "expected_result": "invalid",
+    "validator": "schema-org",
     "applies_to": [
       "mappings"
     ]
+  },
+  {
+    "id": "schema-org-export-rejects-draft-status",
+    "title": "schema.org export rejects draft properties",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/schema-org.status-draft.invalid.json",
+    "expected_result": "invalid",
+    "validator": "schema-org",
+    "applies_to": ["mappings"]
+  },
+  {
+    "id": "schema-org-export-rejects-off-market-status",
+    "title": "schema.org export rejects off-market properties",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/schema-org.status-off-market.invalid.json",
+    "expected_result": "invalid",
+    "validator": "schema-org",
+    "applies_to": ["mappings"]
+  },
+  {
+    "id": "schema-org-export-rejects-archived-status",
+    "title": "schema.org export rejects archived properties",
+    "version": "0.2-draft",
+    "fixture_path": "tests/golden/schema-org.status-archived.invalid.json",
+    "expected_result": "invalid",
+    "validator": "schema-org",
+    "applies_to": ["mappings"]
   }
 ]

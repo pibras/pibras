@@ -23,7 +23,15 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
+# Direct path execution (`uv run scripts/validate_conformance.py`) places only
+# scripts/ on sys.path. Add the project root so the exporter is imported as a
+# real module and the same import also works under test runners.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from jsonschema import Draft202012Validator
+
+from scripts.export_schema_org import ExportError, export as export_schema_org
+from scripts.export_schema_org import round_trip as schema_org_round_trip
 
 type JsonPrimitive = bool | float | int | str | None
 type JsonValue = JsonPrimitive | list[JsonValue] | dict[str, JsonValue]
@@ -31,6 +39,7 @@ type JsonObject = dict[str, JsonValue]
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schema" / "mbras.schema.json"
+DDL_PATH = ROOT / "db" / "schema.sql"
 GOLDEN_DIR = ROOT / "tests" / "golden"
 CONFORMANCE_CASES_PATH = GOLDEN_DIR / "conformance-cases.json"
 
@@ -104,10 +113,8 @@ def validate_fixture_schema(
 ) -> list[CheckFailure]:
     schema_ref = envelope.get("schema_ref")
     if schema_ref is None:
-        # An "invalid" case can only be demonstrated through schema validation,
-        # so it must declare schema_ref; otherwise the negative test is vacuous.
-        if envelope.get("expected_result") == "invalid":
-            return [CheckFailure(fixture_path, "invalid case must declare schema_ref to be verifiable")]
+        # Non-schema fixtures are executed by their specialized validator,
+        # selected explicitly from conformance-cases.json.
         return []
 
     target = schema_target(schema, as_string(schema_ref, f"{relative(fixture_path)}.schema_ref"))
@@ -282,16 +289,121 @@ def validate_portal_feed(path: Path) -> list[CheckFailure]:
     return failures
 
 
+def validate_public_projection_ddl() -> list[CheckFailure]:
+    """Protect the static privacy boundary consumed by public exporters."""
+    ddl = DDL_PATH.read_text(encoding="utf-8")
+    marker = "CREATE VIEW property_public AS"
+    end_marker = "COMMENT ON VIEW property_public"
+    if marker not in ddl or end_marker not in ddl:
+        return [CheckFailure(DDL_PATH, "property_public view or comment is missing")]
+    body = ddl.split(marker, 1)[1].split(end_marker, 1)[0]
+
+    required = {
+        "base property table": "FROM property p",
+        "base unit table": "JOIN unit u",
+        "base building table": "LEFT JOIN building b",
+        "explicit public exposure": "candidate.exposure_level = 'public'",
+        "hidden address suppression": "l.address_display = 'hidden'",
+        "latitude reduction": "round(COALESCE(u.addr_latitude, b.addr_latitude)::numeric, 2)",
+        "longitude reduction": "round(COALESCE(u.addr_longitude, b.addr_longitude)::numeric, 2)",
+        "unpublishable status filter": "p.property_status NOT IN ('draft', 'off_market', 'archived')",
+    }
+    failures = [
+        CheckFailure(DDL_PATH, f"property_public missing {name}")
+        for name, token in required.items()
+        if token not in body
+    ]
+    forbidden = {
+        "materialized property_full source": "FROM property_full",
+        "exact latitude passthrough": "THEN pf.latitude",
+        "exact longitude passthrough": "THEN pf.longitude",
+    }
+    failures.extend(
+        CheckFailure(DDL_PATH, f"property_public contains forbidden {name}")
+        for name, token in forbidden.items()
+        if token in body
+    )
+    return failures
+
+
+def validate_schema_org_cases() -> list[CheckFailure]:
+    failures: list[CheckFailure] = []
+    for raw_case in as_array(load_json(CONFORMANCE_CASES_PATH), "conformance-cases"):
+        case = as_object(raw_case, "conformance-cases[]")
+        if case.get("validator") != "schema-org":
+            continue
+
+        case_id = as_string(case.get("id"), "case.id")
+        expected_result = as_string(case.get("expected_result"), f"{case_id}.expected_result")
+        fixture_path = ROOT / as_string(case.get("fixture_path"), f"{case_id}.fixture_path")
+        envelope = as_object(load_json(fixture_path), str(relative(fixture_path)))
+        record = as_object(envelope.get("record"), f"{relative(fixture_path)}.record")
+        expected_error = optional_string(
+            envelope.get("expected_error"),
+            f"{relative(fixture_path)}.expected_error",
+        )
+
+        try:
+            document = export_schema_org(record)
+        except ExportError as exc:
+            if expected_result == "invalid":
+                if expected_error is not None and expected_error not in str(exc):
+                    failures.append(CheckFailure(fixture_path, f"rejected for unexpected reason: {exc}"))
+                continue
+            failures.append(CheckFailure(fixture_path, f"expected valid, exporter rejected record: {exc}"))
+            continue
+
+        if expected_result == "invalid":
+            failures.append(CheckFailure(fixture_path, "expected invalid, but schema.org export succeeded"))
+            continue
+
+        mismatches = schema_org_round_trip(record, document)
+        if mismatches:
+            failures.append(CheckFailure(fixture_path, "round-trip mismatches: " + "; ".join(mismatches)))
+
+        expected_price = optional_string(
+            envelope.get("expected_price"),
+            f"{relative(fixture_path)}.expected_price",
+        )
+        if expected_price is not None:
+            offers = document.get("offers")
+            if not isinstance(offers, list) or not offers or not isinstance(offers[0], dict):
+                failures.append(CheckFailure(fixture_path, "export produced no offers"))
+            elif offers[0].get("price") != expected_price:
+                failures.append(
+                    CheckFailure(
+                        fixture_path,
+                        f"expected exact price {expected_price!r}, got {offers[0].get('price')!r}",
+                    )
+                )
+    return failures
+
+
 def validate_case_index() -> list[CheckFailure]:
     raw_cases = as_array(load_json(CONFORMANCE_CASES_PATH), "conformance-cases")
     referenced: set[Path] = set()
+    seen_ids: set[str] = set()
     failures: list[CheckFailure] = []
 
     for raw_case in raw_cases:
         case = as_object(raw_case, "conformance-cases[]")
         case_id = as_string(case.get("id"), "case.id")
+        if case_id in seen_ids:
+            failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"duplicate case id {case_id!r}"))
+        seen_ids.add(case_id)
+
         fixture_path = ROOT / as_string(case.get("fixture_path"), f"{case_id}.fixture_path")
+        if fixture_path in referenced:
+            failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"fixture referenced by multiple cases: {relative(fixture_path)}"))
         referenced.add(fixture_path)
+
+        expected_result = as_string(case.get("expected_result"), f"{case_id}.expected_result")
+        if expected_result not in {"valid", "invalid"}:
+            failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"{case_id} has unsupported expected_result {expected_result!r}"))
+
+        validator = optional_string(case.get("validator"), f"{case_id}.validator")
+        if validator not in {None, "schema-org"}:
+            failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"{case_id} has unknown validator {validator!r}"))
 
         if not fixture_path.exists():
             failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"{case_id} points to missing fixture {relative(fixture_path)}"))
@@ -306,9 +418,13 @@ def validate_case_index() -> list[CheckFailure]:
             applies_to = string_list(case.get("applies_to"), f"{case_id}.applies_to")
             if "schema" in applies_to and fixture.get("schema_ref") is None:
                 failures.append(CheckFailure(fixture_path, "schema case must declare schema_ref"))
+            if validator == "schema-org" and "mappings" not in applies_to:
+                failures.append(CheckFailure(fixture_path, "schema-org case must apply to mappings"))
+            if validator == "schema-org" and fixture.get("record") is None:
+                failures.append(CheckFailure(fixture_path, "schema-org case must declare record"))
 
             fixture_expected = optional_string(fixture.get("expected_result"), f"{relative(fixture_path)}.expected_result")
-            case_expected = as_string(case.get("expected_result"), f"{case_id}.expected_result")
+            case_expected = expected_result
             if fixture_expected is not None and fixture_expected != case_expected:
                 failures.append(
                     CheckFailure(fixture_path, f"fixture expected_result {fixture_expected!r} differs from case {case_expected!r}"),
@@ -329,6 +445,8 @@ def run() -> list[CheckFailure]:
     root_validator = Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
 
     failures = validate_case_index()
+    failures.extend(validate_public_projection_ddl())
+    failures.extend(validate_schema_org_cases())
     for fixture_path in sorted(GOLDEN_DIR.iterdir()):
         if fixture_path.name == "conformance-cases.json":
             continue

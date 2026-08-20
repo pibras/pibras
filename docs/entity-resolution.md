@@ -23,9 +23,9 @@
 ## Thresholds v0.2
 
 ```txt
-auto_merge_threshold: >= 0.95
-manual_review_band: 0.75 até 0.95
-auto_reject_threshold: < 0.75
+auto_match_threshold: >= 0.95
+manual_review_band: >= 0.75 e < 0.95
+confirmed_unique_threshold: < 0.75
 ```
 
 Merge errado é mais caro que duplicata temporária. Casos duvidosos devem ir para revisão humana.

@@ -177,9 +177,9 @@ export class UnitMatcher {
     const finalConfidence = Math.min(1.0, Number(highestScore.toFixed(2)));
 
     let reviewState: DedupeReviewState = "confirmed_unique";
-    if (finalConfidence >= 0.85) {
+    if (finalConfidence >= 0.95) {
       reviewState = "auto_matched";
-    } else if (finalConfidence >= 0.65) {
+    } else if (finalConfidence >= 0.75) {
       reviewState = "needs_review";
     }
 

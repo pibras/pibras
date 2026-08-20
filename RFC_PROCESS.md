@@ -2,6 +2,26 @@
 
 Use RFC para mudanças que alterem entidades, campos, enums, política de segurança, LGPD, compatibilidade, feeds ou versionamento.
 
+## Estados
+
+| Estado | Efeito |
+|---|---|
+| Draft | Proposta sem ID atribuído e sem efeito normativo. |
+| Review | ID atribuído; em deliberação pública/técnica. |
+| Accepted | Aprovada pelos mantenedores e refletida em todos os artefatos aplicáveis. |
+| Rejected | Encerrada sem alteração do padrão. |
+| Superseded | Substituída por RFC posterior identificada. |
+
+Arquivos em `docs/rfcs/draft-*.md` permanecem `Draft` e usam `RFC ID: Unassigned` até registro formal pelos mantenedores. Criar o arquivo não equivale a submeter, aceitar ou implementar a proposta.
+
+## Registro de drafts atuais
+
+| Draft | Status | Efeito atual |
+|---|---|---|
+| [`docs/rfcs/draft-offer-fsm.md`](docs/rfcs/draft-offer-fsm.md) | Draft / Unassigned | Nenhum |
+| [`docs/rfcs/draft-money-settlement.md`](docs/rfcs/draft-money-settlement.md) | Draft / Unassigned | Nenhum |
+| [`docs/rfcs/draft-presentation-context.md`](docs/rfcs/draft-presentation-context.md) | Draft / Unassigned | Nenhum |
+
 ## Fluxo
 
 ```txt
@@ -22,6 +42,8 @@ Use RFC para mudanças que alterem entidades, campos, enums, política de segura
 ```md
 # RFC: <titulo>
 
+## Metadados
+## Resumo
 ## Problema
 
 ## Proposta
@@ -37,6 +59,8 @@ Use RFC para mudanças que alterem entidades, campos, enums, política de segura
 ## Testes de conformidade
 
 ## Plano de migração
+## Alternativas consideradas
+## Questões abertas
 ```
 
 ## Regras

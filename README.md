@@ -21,6 +21,10 @@ O README é o índice de autoridade. Ele não substitui os documentos técnicos;
 | [`docs/privacy-operations.md`](docs/privacy-operations.md) | Normativo v0.2 | Controles operacionais para fluxo de dados, enriquecimento, Sync Service, sharing ledger e gates de produção. |
 | [`docs/lgpd-mitos-e-realidade.md`](docs/lgpd-mitos-e-realidade.md) | Guia interpretativo | Comparação detalhada entre mitos populares, realidade jurídica e controles operacionais da LGPD. |
 | [`docs/entity-resolution.md`](docs/entity-resolution.md) | Normativo v0.2 | Regras de deduplicação, survivorship e revisão. |
+| [`docs/vision/intermediacao-alto-padrao.md`](docs/vision/intermediacao-alto-padrao.md) | Informative Draft | Hipóteses sociotécnicas; não altera o core. |
+| [`docs/profiles/high-end-brokerage-ux.md`](docs/profiles/high-end-brokerage-ux.md) | Application Profile Draft | Resultados de interação e privacidade; sem certificação. |
+| [`docs/profiles/high-end-brokerage-implementation-matrix.md`](docs/profiles/high-end-brokerage-implementation-matrix.md) | Matriz informativa | Cobertura real e gaps; não declara paridade completa. |
+| [`docs/rfcs/`](docs/rfcs/) | RFC Drafts não atribuídas | Propostas de Offer FSM, Money/Settlement e Presentation Context; sem efeito até aprovação. |
 | [`mappings/v0.1.0-code-to-v0.2.md`](mappings/v0.1.0-code-to-v0.2.md) | Migração | De/Para entre artefatos atuais e o alvo v0.2. |
 
 ## Decisão de reconciliação v0.2
@@ -61,7 +65,7 @@ A baseline técnica já contém os alvos de transição v0.2 para:
 4. **Dados externos entram como sugestão** — fonte menos confiável não sobrescreve dado proprietário sem revisão.
 5. **Autorização por política** — `ExposurePolicy` é o alvo v0.2; `ExposureRule` permanece como compatibilidade.
 6. **LGPD por arquitetura** — controller/processor, finalidade, retenção e DSAR precisam existir como dados.
-7. **Conformidade verificável** — fixtures golden complementam documentação e schemas.
+7. **Conformidade verificável** — fixtures golden complementam documentação e schemas; cada gate deve declarar seu escopo e não implica paridade exaustiva.
 
 ## Convenções atuais
 
@@ -85,7 +89,7 @@ Checks canônicos:
 
 ```bash
 uv lock --check
-uv run scripts/validate_conformance.py
+uv run scripts/validate_conformance.py  # inclui exportação/round-trip schema.org
 uv run scripts/validate_openapi.py
 uv run openapi-spec-validator openapi.yaml
 npm run typecheck

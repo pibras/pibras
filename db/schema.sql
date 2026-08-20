@@ -620,6 +620,11 @@ CREATE TABLE listing (
 CREATE INDEX idx_listing_property ON listing(property_id);
 CREATE INDEX idx_listing_channel ON listing(channel_id);
 CREATE INDEX idx_listing_status ON listing(listing_status);
+CREATE INDEX idx_listing_property_public_latest
+  ON listing(property_id, updated_at DESC, id DESC)
+  WHERE exposure_level = 'public'
+    AND listing_status = 'published'
+    AND record_state = 'active';
 CREATE TRIGGER trg_listing_touch BEFORE UPDATE ON listing FOR EACH ROW EXECUTE FUNCTION touch_row();
 
 -- =====================================================================
@@ -1221,68 +1226,85 @@ CREATE INDEX idx_property_full_price ON property_full(asking_price_amount);
 -- Atualize com: REFRESH MATERIALIZED VIEW CONCURRENTLY mbras.property_full;
 
 -- =====================================================================
--- Projeção pública governada: property_public
+-- Limite público minimizado: property_public
 --
--- Superfície de leitura destinada a site, portais e parceiros. Deriva de
--- property_full mas remove campos restritos e aplica a decisão de
--- exposição vigente:
---   - matricula: omitida (identificador cartorial, nunca público);
---   - latitude/longitude exatas: substituídas por coordenadas
---     arredondadas (~1 km) quando a política permite, respeitando
---     geo_precision;
---   - scores internos (liquidity, match, rarity, off_market): omitidos;
---   - preço: exposto apenas quando price_display = 'visible'.
+-- Esta view consulta as tabelas base para que revogações e alterações de
+-- exposição tenham efeito imediato. Ela é um limite estático, fail-closed:
+-- somente listings explicitamente públicos, publicados, ativos, não expirados
+-- e pertencentes a canais ativos entram. A avaliação contextual completa de
+-- ExposurePolicy continua sendo responsabilidade do policy engine.
 --
--- Apenas imóveis com published = true e exposure_level público entram.
+-- Garantias estruturais:
+--   - matrícula, PII, documentos e scores internos não são selecionados;
+--   - coordenadas públicas nunca excedem duas casas decimais;
+--   - address_display = 'hidden' remove geografia e nome do edifício;
+--   - preço aparece somente quando price_display = 'visible'.
 -- =====================================================================
 CREATE VIEW property_public AS
-SELECT DISTINCT ON (pf.id)
-  pf.id,
-  pf.code,
-  pf.transaction_type,
-  pf.property_status,
-  pf.availability,
-  -- O listing publicado decide se o preço aparece.
+SELECT
+  p.id,
+  p.code,
+  p.transaction_type,
+  p.property_status,
+  p.availability,
   CASE WHEN l.price_display = 'visible'
-       THEN COALESCE(l.display_price_amount, pf.asking_price_amount) END
+       THEN COALESCE(l.display_price_amount, p.asking_price_amount) END
     AS asking_price_amount,
   CASE WHEN l.price_display = 'visible'
-       THEN COALESCE(l.display_price_currency, pf.asking_price_currency) END
+       THEN COALESCE(l.display_price_currency, p.asking_price_currency) END
     AS asking_price_currency,
-  pf.property_type,
-  pf.usable_area_m2,
-  pf.total_area_m2,
-  pf.bedrooms,
-  pf.suites,
-  pf.bathrooms,
-  pf.parking_spaces,
-  pf.sun_orientation,
-  pf.view_type,
-  pf.city,
-  pf.state,
-  pf.neighborhood_id,
-  -- Coordenadas degradadas (~1 km) sempre que o listing não autorizar
-  -- endereço completo, e nunca mais precisas que a origem.
-  CASE WHEN l.address_display = 'full'
-       THEN pf.latitude
-       ELSE round(pf.latitude::numeric, 2)::double precision END
+  u.property_type,
+  u.usable_area_m2,
+  u.total_area_m2,
+  u.bedrooms,
+  u.suites,
+  u.bathrooms,
+  u.parking_spaces,
+  u.sun_orientation,
+  u.view_type,
+  CASE WHEN l.address_display = 'hidden'
+       THEN NULL ELSE COALESCE(u.addr_city, b.addr_city) END AS city,
+  CASE WHEN l.address_display = 'hidden'
+       THEN NULL ELSE COALESCE(u.addr_state, b.addr_state) END AS state,
+  CASE WHEN l.address_display = 'hidden'
+       THEN NULL ELSE COALESCE(u.addr_neighborhood_id, b.addr_neighborhood_id) END
+    AS neighborhood_id,
+  CASE WHEN l.address_display = 'hidden' THEN NULL
+       ELSE round(COALESCE(u.addr_latitude, b.addr_latitude)::numeric, 2)::double precision END
     AS latitude_approx,
-  CASE WHEN l.address_display = 'full'
-       THEN pf.longitude
-       ELSE round(pf.longitude::numeric, 2)::double precision END
+  CASE WHEN l.address_display = 'hidden' THEN NULL
+       ELSE round(COALESCE(u.addr_longitude, b.addr_longitude)::numeric, 2)::double precision END
     AS longitude_approx,
-  pf.building_name,
-  pf.amenities,
-  pf.updated_at
-FROM property_full pf
-JOIN listing l ON l.property_id = pf.id
-WHERE pf.published = true
-  AND pf.record_state = 'active'
-  AND l.listing_status = 'published'
-  AND l.record_state = 'active'
-ORDER BY pf.id, l.updated_at DESC;
+  CASE WHEN l.address_display = 'hidden' THEN NULL ELSE b.name END AS building_name,
+  b.amenities,
+  GREATEST(p.updated_at, u.updated_at, b.updated_at, l.updated_at) AS updated_at
+FROM property p
+JOIN unit u ON u.id = p.unit_id
+LEFT JOIN building b ON b.id = COALESCE(p.building_id, u.building_id)
+JOIN LATERAL (
+  SELECT
+    candidate.id,
+    candidate.price_display,
+    candidate.display_price_amount,
+    candidate.display_price_currency,
+    candidate.address_display,
+    candidate.updated_at
+  FROM listing candidate
+  JOIN publication_channel channel ON channel.id = candidate.channel_id
+  WHERE candidate.property_id = p.id
+    AND candidate.exposure_level = 'public'
+    AND candidate.listing_status = 'published'
+    AND candidate.record_state = 'active'
+    AND channel.active = true
+    AND (candidate.expires_at IS NULL OR candidate.expires_at > CURRENT_TIMESTAMP)
+  ORDER BY candidate.updated_at DESC, candidate.id DESC
+  LIMIT 1
+) l ON true
+WHERE p.published = true
+  AND p.record_state = 'active'
+  AND p.property_status NOT IN ('draft', 'off_market', 'archived');
 
 COMMENT ON VIEW property_public IS
-  'Projeção pública governada. Sem matrícula, sem coordenadas exatas, sem scores internos.';
+  'Limite público minimizado. Exige listing público explícito; sem matrícula, coordenadas exatas, PII ou scores internos. A política contextual ainda deve ser avaliada pelo policy engine.';
 
 COMMIT;
