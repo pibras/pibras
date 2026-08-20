@@ -844,9 +844,9 @@ Componentes:
 Critérios mínimos de aceite para o MVP:
 
 ```txt
-auto_merge_threshold: >= 0.95
-manual_review_band: 0.75 até 0.95
-auto_reject_threshold: < 0.75
+auto_match_threshold: >= 0.95
+manual_review_band: >= 0.75 e < 0.95
+confirmed_unique_threshold: < 0.75
 false_merge_tolerance: menor que false_duplicate_tolerance
 ```
 
@@ -861,7 +861,7 @@ entity_level: building | unit | property | listing
 score
 matched_features
 missing_features
-decision: auto_merge | review | reject
+decision: auto_matched | needs_review | confirmed_unique
 reviewer_id
 reason
 ```
@@ -891,9 +891,9 @@ Tabela de survivorship por campo:
 | Descrição | texto aprovado para o canal | vira `pending_change` |
 | Dados de proprietário / `tax_id` (PII) | dado proprietário interno | nunca sobrescrito automaticamente; exige revisão |
 
-Thresholds de deduplicação (entity resolution): `score >= 0.95` → `auto_merge`; `0.75 <= score < 0.95` → `needs_review`; `score < 0.75` → tratado como não-duplicado.
+Thresholds de deduplicação (entity resolution): `score >= 0.95` → `auto_matched`; `0.75 <= score < 0.95` → `needs_review`; `score < 0.75` → `confirmed_unique`.
 
-Fixtures de conformidade que exercitam estas regras: `tests/golden/pending-change.external-overwrite.json` (preço de menor confiança vira revisão), `tests/golden/pending-change.owner-pii-protected.json` (PII de proprietário nunca sobrescrita por fonte externa), `tests/golden/unit.duplicate-candidate.json` (auto_merge acima do limite) e `tests/golden/unit.dedupe-review-band.json` (banda 0,75–0,95 exige revisão).
+Fixtures de conformidade que exercitam estas regras: `tests/golden/pending-change.external-overwrite.json` (preço de menor confiança vira revisão), `tests/golden/pending-change.owner-pii-protected.json` (PII de proprietário nunca sobrescrita por fonte externa), `tests/golden/unit.duplicate-candidate.json` (`auto_matched` acima do limite) e `tests/golden/unit.dedupe-review-band.json` (banda 0,75–0,95 exige revisão).
 
 Regra de ouro:
 
