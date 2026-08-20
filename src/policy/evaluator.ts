@@ -19,6 +19,8 @@ export interface EvaluationResult {
   reasons: string[];
   masked_fields: string[];
   denied_fields: string[];
+  /** Campos permitidos por regras 'allow'. Vazio = sem restrição de allowlist. */
+  allowed_fields: string[];
 }
 
 export interface ProjectedPropertyPayload {
@@ -32,6 +34,29 @@ export interface ApprovalRecord {
   approved_by: string | null;
   approved_at: string | null;
   approval_scope: string | null;
+}
+
+/**
+ * Reduz uma entidade aos campos permitidos por regras 'allow'.
+ *
+ * Allowlist vazia significa "sem restrição declarada" e devolve a entidade
+ * inteira, preservando o comportamento de políticas que só usam mascaramento.
+ * Quando há allowlist, apenas os campos declarados sobrevivem — mais `id`,
+ * que é o identificador do recurso e não um dado exposto.
+ */
+function allowlistFields<T extends Record<string, unknown>>(
+  entity: T,
+  allowedFields: string[],
+): Partial<T> {
+  if (allowedFields.length === 0) return { ...entity };
+  const keep = new Set<string>([...allowedFields, "id"]);
+  const projected: Partial<T> = {};
+  for (const key of Object.keys(entity)) {
+    if (keep.has(key)) {
+      projected[key as keyof T] = entity[key as keyof T];
+    }
+  }
+  return projected;
 }
 
 export class ExposurePolicyEvaluator {
@@ -59,6 +84,7 @@ export class ExposurePolicyEvaluator {
         ],
         masked_fields: [],
         denied_fields: ["*"],
+        allowed_fields: [],
       };
     }
 
@@ -69,12 +95,14 @@ export class ExposurePolicyEvaluator {
         reasons: [`Action '${context.action}' requires explicit administrative approval`],
         masked_fields: [],
         denied_fields: [],
+        allowed_fields: [],
       };
     }
 
     // 3. Avaliação de regras ordenadas por prioridade decrescente
     const sortedRules = [...policy.rules].sort((a, b) => b.priority - a.priority);
 
+    const allowedFields: string[] = [];
     let currentDecision: PolicyDecision = policy.default_decision ?? "deny";
 
     for (const rule of sortedRules) {
@@ -88,6 +116,9 @@ export class ExposurePolicyEvaluator {
         if (rule.effect === "allow") {
           currentDecision = "allow";
           reasons.push(`Rule '${rule.id ?? "anonymous"}' ALLOWED action '${context.action}'`);
+          if (rule.fields.length > 0) {
+            allowedFields.push(...rule.fields);
+          }
         } else if (rule.effect === "deny") {
           currentDecision = "deny";
           reasons.push(`Rule '${rule.id ?? "anonymous"}' DENIED action '${context.action}'`);
@@ -121,6 +152,7 @@ export class ExposurePolicyEvaluator {
       reasons,
       masked_fields: [...new Set(maskedFields)],
       denied_fields: [...new Set(deniedFields)],
+      allowed_fields: [...new Set(allowedFields)],
     };
   }
 
@@ -156,17 +188,29 @@ export class ExposurePolicyEvaluator {
             ],
             masked_fields: [],
             denied_fields: ["*"],
+            allowed_fields: [],
           },
         };
       }
     }
 
-    if (evalResult.decision === "deny") {
+    // Somente 'allow' e 'mask' são publicáveis. 'deny' e 'needs_approval'
+    // bloqueiam a projeção: emitir algo que aguarda aprovação equivale a
+    // publicar sem ela.
+    if (evalResult.decision !== "allow" && evalResult.decision !== "mask") {
       return null;
     }
 
-    const projectedProp: Partial<Property> = { ...params.property };
-    let projectedUnit: Partial<Unit> | null = params.unit ? { ...params.unit } : null;
+    // Allowlist tem precedência: se alguma regra 'allow' declarou campos, só
+    // eles (mais o identificador do recurso) sobrevivem à projeção. Sem isso a
+    // projeção seria uma deny-list e vazaria qualquer campo não mascarado.
+    const projectedProp: Partial<Property> = allowlistFields(
+      params.property,
+      evalResult.allowed_fields,
+    );
+    let projectedUnit: Partial<Unit> | null = params.unit
+      ? allowlistFields(params.unit, evalResult.allowed_fields)
+      : null;
 
     // Mascarar preço se solicitado
     if (evalResult.masked_fields.includes("asking_price")) {

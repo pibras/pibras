@@ -71,6 +71,22 @@ export function extractAllTagContents(xmlChunk: string, tagName: string): string
   return results;
 }
 
+/**
+ * Extrai o identificador da unidade a partir do complemento do endereço.
+ *
+ * Feeds brasileiros trazem a unidade no complemento ("Apto 71", "Cj 402",
+ * "Casa 3"); o campo <Numero> pertence ao logradouro. Retorna null quando o
+ * complemento não carrega um identificador reconhecível, para que a chave de
+ * deduplicação não seja construída sobre um valor errado.
+ */
+export function extractUnitNumber(complement?: string | null): string | null {
+  if (!complement) return null;
+  const match = complement.match(/\b(?:apto?|apartamento|unidade|cj|conjunto|sala|casa|lote)\.?\s*([0-9]+[a-z]?)\b/i);
+  if (match?.[1]) return match[1].toUpperCase();
+  const bare = complement.trim().match(/^([0-9]+[a-z]?)$/i);
+  return bare?.[1] ? bare[1].toUpperCase() : null;
+}
+
 export class ZapXMLMapper {
   /**
    * Extrai blocos individuais de imóveis de um feed XML completo (ZAP, VivaReal, OLX ou PIBRAS).
@@ -259,9 +275,13 @@ export class ZapXMLMapper {
     const condoFee = parseBRLToCentavos(parsed.condoFee);
     const iptuAnnual = parseBRLToCentavos(parsed.iptuAnnual);
 
+    // O <Numero> do feed é o número do logradouro, não da unidade. Reutilizá-lo
+    // como unit_number colapsava todos os apartamentos de um mesmo endereço
+    // na mesma chave determinística de deduplicação.
+    const unitNumber = extractUnitNumber(parsed.complement);
     const dedupeKey = buildUnitDedupeKey({
       address,
-      unit_number: parsed.number ?? null,
+      unit_number: unitNumber,
     });
     const addrKey = buildNormalizedAddressKey(address);
     const areaSig = buildAreaSignature({
@@ -308,7 +328,7 @@ export class ZapXMLMapper {
       dedupe_review_state: "unreviewed",
       property_type: pType,
       address,
-      unit_number: parsed.number ?? null,
+      unit_number: unitNumber,
       tower: null,
       floor: null,
       usable_area_m2: usableArea ?? null,

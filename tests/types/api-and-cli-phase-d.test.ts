@@ -11,6 +11,8 @@ import {
 import type { ExposurePolicy } from "../../types/mbras.ts";
 
 test("PIBRAS HTTP REST Server handles ingestion, dedupe, arbitration, and feeds", async () => {
+  // Rotas autenticadas exigem credencial portadora (openapi.yaml).
+  process.env["PIBRAS_API_TOKEN"] = "test-token-for-reference-server";
   const server = createPibrasApiServer();
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const port = (server.address() as AddressInfo).port;
@@ -27,7 +29,7 @@ test("PIBRAS HTTP REST Server handles ingestion, dedupe, arbitration, and feeds"
     // 2. POST /api/v1/ingest/raw
     const rawRes = await fetch(`${baseUrl}/api/v1/ingest/raw`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: "Bearer test-token-for-reference-server" },
       body: JSON.stringify({
         source_system: "kenlo",
         payload: { title: "Cobertura Triplex", price: 30000000 },
@@ -41,7 +43,7 @@ test("PIBRAS HTTP REST Server handles ingestion, dedupe, arbitration, and feeds"
     // 3. POST /api/v1/ingest/csv-row
     const csvRowRes = await fetch(`${baseUrl}/api/v1/ingest/csv-row`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: "Bearer test-token-for-reference-server" },
       body: JSON.stringify({
         row: {
           rua: "Avenida Europa",
@@ -69,7 +71,7 @@ test("PIBRAS HTTP REST Server handles ingestion, dedupe, arbitration, and feeds"
 
     const matchRes = await fetch(`${baseUrl}/api/v1/dedupe/match`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: "Bearer test-token-for-reference-server" },
       body: JSON.stringify({
         incoming_unit: candidateUnit,
         existing_inventory: [
@@ -116,7 +118,7 @@ test("PIBRAS HTTP REST Server handles ingestion, dedupe, arbitration, and feeds"
 
     const feedRes = await fetch(`${baseUrl}/api/v1/feeds/portal`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: "Bearer test-token-for-reference-server" },
       body: JSON.stringify({
         format: "pibras",
         items: [
@@ -134,7 +136,14 @@ test("PIBRAS HTTP REST Server handles ingestion, dedupe, arbitration, and feeds"
     assert.ok(feedXml.includes("<Listings>"));
 
     // 6. GET /unknown-path -> 404
-    const notFoundRes = await fetch(`${baseUrl}/api/v1/non-existent`);
+    // Sem credencial, rotas desconhecidas respondem 401 e não 404: um chamador
+    // não autenticado não deve descobrir quais rotas existem.
+    const unauthRes = await fetch(`${baseUrl}/api/v1/non-existent`);
+    assert.equal(unauthRes.status, 401);
+
+    const notFoundRes = await fetch(`${baseUrl}/api/v1/non-existent`, {
+      headers: { Authorization: "Bearer test-token-for-reference-server" },
+    });
     assert.equal(notFoundRes.status, 404);
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));

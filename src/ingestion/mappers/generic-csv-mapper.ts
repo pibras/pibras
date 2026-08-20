@@ -54,7 +54,15 @@ export function parseAreaM2(val?: unknown): number | undefined {
   if (val == null) return undefined;
   if (typeof val === "number") return val;
   if (typeof val !== "string") return undefined;
-  const clean = val.replace(/[m²M2\s]/g, "").replace(/\./g, "").replace(",", ".");
+  // Remove apenas o sufixo de unidade no fim da string. A classe de
+  // caracteres anterior apagava todo dígito "2" em qualquer posição,
+  // corrompendo silenciosamente áreas como "120 m2" -> 10.
+  const clean = val
+    .trim()
+    .replace(/\s*(m²|m2|M²|M2)\s*$/i, "")
+    .replace(/\s/g, "")
+    .replace(/\.(?=\d{3}\b)/g, "")
+    .replace(",", ".");
   const num = parseFloat(clean);
   return isNaN(num) ? undefined : num;
 }

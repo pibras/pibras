@@ -56,8 +56,21 @@ export function resolveSourceTrustTier(source: SourceSystem): TrustTier {
  * Computes SHA-256 deterministic hash of payload.
  */
 export function computePayloadDigest(data: unknown): string {
-  const jsonStr = JSON.stringify(data, Object.keys(data as object).sort());
-  return createHash("sha256").update(jsonStr).digest("hex");
+  // JSON.stringify(value, arrayOfKeys) trata o array como *filtro de chaves*,
+  // que só se aplica ao nível superior: valores aninhados eram descartados e
+  // payloads distintos colidiam. Serializamos com chaves ordenadas em todos os
+  // níveis para obter um digest determinístico e sensível ao conteúdo inteiro.
+  return createHash("sha256").update(stableStringify(data)).digest("hex");
+}
+
+/** Serializa com ordenação estável de chaves em qualquer profundidade. */
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "null";
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  const entries = Object.keys(value as Record<string, unknown>)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`);
+  return `{${entries.join(",")}}`;
 }
 
 /**

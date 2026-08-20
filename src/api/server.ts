@@ -1,4 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
+import { timingSafeEqual } from "node:crypto";
+import { Buffer } from "node:buffer";
 import {
   RawReceiver,
   GenericCSVMapper,
@@ -52,13 +54,43 @@ export function sendXml(res: ServerResponse, statusCode: number, xml: string): v
   res.end(xml);
 }
 
+/**
+ * Extrai e valida a credencial portadora exigida por `openapi.yaml`.
+ *
+ * O contrato declara `security: [{ bearerAuth: [] }]` globalmente, com 401 e
+ * 403 em todas as operações. Servir as rotas sem credencial tornaria a
+ * implementação de referência não conforme ao próprio contrato publicado.
+ *
+ * O token esperado vem de PIBRAS_API_TOKEN. Sem essa variável o servidor
+ * recusa toda rota autenticada: falhar fechado é a única opção segura, já que
+ * um default embutido viraria credencial pública.
+ */
+export function authorize(req: IncomingMessage): { ok: true } | { ok: false; status: 401 | 403; error: string } {
+  const expected = process.env["PIBRAS_API_TOKEN"];
+  const header = req.headers.authorization;
+
+  if (!header || !header.startsWith("Bearer ")) {
+    return { ok: false, status: 401, error: "Missing bearer credential" };
+  }
+  if (!expected) {
+    return { ok: false, status: 403, error: "Server has no PIBRAS_API_TOKEN configured; authenticated routes are disabled" };
+  }
+  const presented = header.slice("Bearer ".length).trim();
+  if (presented.length !== expected.length || !timingSafeEqual(Buffer.from(presented), Buffer.from(expected))) {
+    return { ok: false, status: 403, error: "Invalid bearer credential" };
+  }
+  return { ok: true };
+}
+
 export function createPibrasApiServer(): Server {
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
     const method = req.method?.toUpperCase();
 
     // CORS headers
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    // Wildcard CORS numa API autenticada permitiria que qualquer página
+    // enviasse requisições; a origem permitida é explícita.
+    res.setHeader("Access-Control-Allow-Origin", process.env["PIBRAS_ALLOWED_ORIGIN"] ?? "http://localhost:3000");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
@@ -70,6 +102,17 @@ export function createPibrasApiServer(): Server {
 
     try {
       // 1. Health check
+      // /health permanece público para liveness probes; todo o resto exige
+      // credencial portadora, conforme openapi.yaml.
+      if (url.pathname !== "/health") {
+        const auth = authorize(req);
+        if (!auth.ok) {
+          res.setHeader("WWW-Authenticate", 'Bearer realm="pibras"');
+          sendJson(res, auth.status, { success: false, error: auth.error });
+          return;
+        }
+      }
+
       if (url.pathname === "/health" && method === "GET") {
         sendJson(res, 200, {
           status: "ok",
@@ -204,4 +247,26 @@ export function createPibrasApiServer(): Server {
       });
     }
   });
+}
+
+/**
+ * Sobe o servidor de referência. `npm run serve` executa este módulo
+ * diretamente; antes, nenhum listener era aberto e o processo encerrava
+ * imediatamente.
+ */
+export function startPibrasApiServer(options: ServerOptions = {}): Server {
+  const port = options.port ?? Number(process.env["PORT"] ?? 3000);
+  const host = options.host ?? process.env["HOST"] ?? "127.0.0.1";
+  const server = createPibrasApiServer();
+  server.listen(port, host, () => {
+    console.log(`PIBRAS reference API listening on http://${host}:${port}`);
+    if (!process.env["PIBRAS_API_TOKEN"]) {
+      console.warn("PIBRAS_API_TOKEN is not set: authenticated routes will reject every request.");
+    }
+  });
+  return server;
+}
+
+if (import.meta.main) {
+  startPibrasApiServer();
 }

@@ -69,11 +69,17 @@ export const MEDIA_VARIANTS = {
 /**
  * Configuração de watermark por canal de distribuição.
  *
- * `text` usa o placeholder OPERATOR_BRAND, substituído pelo nome do
- * operador em tempo de execução. O padrão é neutro: nenhuma marca de
- * patrocinador é embutida no código.
+ * `text` usa OPERATOR_BRAND, resolvido em tempo de execução a partir do
+ * ambiente. O padrão é neutro: nenhuma marca de patrocinador fica embutida.
  */
-export const OPERATOR_BRAND = "{{OPERATOR_BRAND}}";
+/**
+ * Marca do operador aplicada às imagens.
+ *
+ * Lida de PIBRAS_OPERATOR_BRAND em tempo de execução. O padrão "PIBRAS" é
+ * neutro: nenhum patrocinador fica embutido no código do padrão, e cada
+ * operador define a própria marca sem editar o fonte.
+ */
+export const OPERATOR_BRAND = process.env["PIBRAS_OPERATOR_BRAND"] ?? "PIBRAS";
 
 export const WATERMARK_PROFILES = {
   portal: {
