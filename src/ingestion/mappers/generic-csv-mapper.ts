@@ -57,10 +57,14 @@ export function parseAreaM2(val?: unknown): number | undefined {
   // Remove apenas o sufixo de unidade no fim da string. A classe de
   // caracteres anterior apagava todo dígito "2" em qualquer posição,
   // corrompendo silenciosamente áreas como "120 m2" -> 10.
-  const clean = val
-    .trim()
-    .replace(/\s*(m²|m2|M²|M2)\s*$/i, "")
-    .replace(/\s/g, "")
+  //
+  // O espaço em branco é retirado ANTES de casar o sufixo. Uma variante com
+  // `\s*` em volta da alternação (/\s*(m²|m2)\s*$/i) retrocede de forma
+  // polinomial: uma célula CSV com milhares de espaços levava segundos para
+  // ser avaliada, o que é um vetor de negação de serviço na ingestão.
+  const withoutSpace = val.replace(/\s+/g, "");
+  const clean = withoutSpace
+    .replace(/(?:m²|m2)$/i, "")
     .replace(/\.(?=\d{3}\b)/g, "")
     .replace(",", ".");
   const num = parseFloat(clean);
