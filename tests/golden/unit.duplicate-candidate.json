@@ -11,9 +11,9 @@
     "floor"
   ],
   "missing_features": [],
-  "decision": "auto_merge",
+  "decision": "auto_matched",
   "thresholds": {
-    "auto_merge": 0.95,
+    "auto_matched": 0.95,
     "manual_review_min": 0.75
   },
   "expected_result": "valid"

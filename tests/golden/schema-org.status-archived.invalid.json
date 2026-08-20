@@ -1,0 +1,13 @@
+{
+  "id": "schema-org-export-rejects-archived-status",
+  "expected_result": "invalid",
+  "expected_error": "property_status='archived' is not publishable",
+  "record": {
+    "id": "3f2504e0-4f89-41d3-9a0c-0305e82c3312",
+    "property_type": "commercial_room",
+    "property_status": "archived",
+    "transaction_type": "rent",
+    "city": "São Paulo",
+    "state": "SP"
+  }
+}

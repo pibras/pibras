@@ -135,6 +135,14 @@ uv run python scripts/qa/manifest.py "$REPORT" "$STATUS" 2 \
   tests/types/mbras.test.ts \
   scripts/export_types_manifest.ts \
   scripts/validate_conformance.py \
+  scripts/export_schema_org.py \
+  mappings/schema-org-to-pibras.md \
+  tests/golden/conformance-cases.json \
+  tests/golden/schema-org.property-public.json \
+  tests/golden/schema-org.leaked-restricted-fields.invalid.json \
+  tests/golden/schema-org.status-draft.invalid.json \
+  tests/golden/schema-org.status-off-market.invalid.json \
+  tests/golden/schema-org.status-archived.invalid.json \
   scripts/validate_openapi.py \
   scripts/qa/task-2.sh \
   README.md \

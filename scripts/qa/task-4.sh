@@ -108,6 +108,15 @@ STATUS=completed
 uv run python scripts/qa/manifest.py "$REPORT" "$STATUS" 4 \
   scripts/check_contract_parity.py \
   scripts/check_domain_invariants.py \
+  scripts/validate_conformance.py \
+  scripts/export_schema_org.py \
+  mappings/schema-org-to-pibras.md \
+  tests/golden/conformance-cases.json \
+  tests/golden/schema-org.property-public.json \
+  tests/golden/schema-org.leaked-restricted-fields.invalid.json \
+  tests/golden/schema-org.status-draft.invalid.json \
+  tests/golden/schema-org.status-off-market.invalid.json \
+  tests/golden/schema-org.status-archived.invalid.json \
   tests/contracts/expected-red-manifest.json \
   tests/contracts/test_gates.py \
   tests/contracts/pre-reconciliation/README.md \

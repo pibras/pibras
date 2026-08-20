@@ -102,6 +102,15 @@ STATUS=completed
 uv run python scripts/qa/manifest.py "$REPORT" "$STATUS" 5 \
   docs/migrations/v0.1.0-to-v0.2.md \
   mappings/v0.1.0-code-to-v0.2.md \
+  mappings/schema-org-to-pibras.md \
+  scripts/validate_conformance.py \
+  scripts/export_schema_org.py \
+  tests/golden/conformance-cases.json \
+  tests/golden/schema-org.property-public.json \
+  tests/golden/schema-org.leaked-restricted-fields.invalid.json \
+  tests/golden/schema-org.status-draft.invalid.json \
+  tests/golden/schema-org.status-off-market.invalid.json \
+  tests/golden/schema-org.status-archived.invalid.json \
   db/schema.sql \
   schema/mbras.schema.json \
   types/mbras.ts \

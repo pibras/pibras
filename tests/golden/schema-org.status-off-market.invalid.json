@@ -1,0 +1,13 @@
+{
+  "id": "schema-org-export-rejects-off-market-status",
+  "expected_result": "invalid",
+  "expected_error": "property_status='off_market' is not publishable",
+  "record": {
+    "id": "3f2504e0-4f89-41d3-9a0c-0305e82c3311",
+    "property_type": "house",
+    "property_status": "off_market",
+    "transaction_type": "sale",
+    "city": "São Paulo",
+    "state": "SP"
+  }
+}

@@ -1,5 +1,7 @@
 {
   "id": "schema-org-export-rejects-restricted-fields",
+  "expected_result": "invalid",
+  "expected_error": "input carries restricted fields",
   "$comment": "[compatibility] Negative fixture. This record was read from property_full instead of the governed property_public surface: it carries matricula, exact coordinates and internal scores. The exporter MUST reject it. Expected: scripts/export_schema_org.py exits non-zero.",
   "record": {
     "id": "3f2504e0-4f89-41d3-9a0c-0305e82c3302",

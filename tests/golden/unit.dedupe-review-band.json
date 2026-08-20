@@ -8,7 +8,7 @@
   "missing_features": ["matricula", "floor"],
   "decision": "needs_review",
   "thresholds": {
-    "auto_merge": 0.95,
+    "auto_matched": 0.95,
     "manual_review_min": 0.75
   },
   "expected_result": "valid"

@@ -10,10 +10,12 @@ schema.org é alvo de **publicação web e SEO**, não modelo canônico.
 
 ## Regra de governança
 
-A projeção schema.org deriva **exclusivamente** da superfície governada
+A projeção schema.org deriva **exclusivamente** do limite público minimizado
 `property_public` (`db/schema.sql`). Nunca de `property`, `unit` ou
 `property_full`, que contêm matrícula, coordenadas exatas, scores internos e
-preço não filtrado.
+preço não filtrado. A view exige um `Listing` explicitamente público e aplica
+minimização estrutural; decisões contextuais adicionais continuam sujeitas ao
+`ExposurePolicyEvaluator` antes do envio.
 
 Consequência normativa: se um campo não existe em `property_public`, ele
 **não pode** aparecer na saída schema.org. O exportador não tem acesso ao
@@ -60,7 +62,7 @@ Origem: `property_public`. Alvo: schema.org V30.0.
 | `transaction_type` | `businessFunction` | Offer | **lossy** | `sale_rent`/`season_rent` sem equivalente |
 | `property_status` | `availability` | Offer | **lossy** | Ver crosswalk de enums |
 | `availability` | — | — | omitido | Redundante com `property_status` na borda pública |
-| `asking_price_amount` | `price` | Offer | **condicional** | Só quando `price_display = 'visible'`; centavos -> unidade decimal |
+| `asking_price_amount` | `price` | Offer | **condicional** | Só quando `price_display = 'visible'`; centavos -> `Text` decimal exato, sem `float` |
 | `asking_price_currency` | `priceCurrency` | Offer | exato | ISO 4217 |
 | `usable_area_m2` | `floorSize` (`QuantitativeValue`, `unitCode: MTK`) | Accommodation | exato | UN/CEFACT MTK = m² |
 | `total_area_m2` | — | — | **omitido** | `floorSize` é cardinalidade 1; área útil é a mais comparável |
@@ -76,7 +78,7 @@ Origem: `property_public`. Alvo: schema.org V30.0.
 | `latitude_approx` | `latitude` | GeoCoordinates | **degradado** | Já arredondado (~1 km) na origem quando a política exige |
 | `longitude_approx` | `longitude` | GeoCoordinates | **degradado** | Idem |
 | `building_name` | `name` | Accommodation | exato | |
-| `amenities` | `amenityFeature[]` | Accommodation | exato | |
+| `amenities` | `amenityFeature[]` | Accommodation | **lossy** | Texto é preservado, mas não há vocabulário controlado compartilhado |
 | `updated_at` | `datePosted` | RealEstateListing | **aproximado** | `datePosted` é publicação; `updated_at` é última alteração |
 
 Campos **ausentes por construção** (não existem em `property_public`, logo
@@ -121,10 +123,10 @@ Membros verificados: `BackOrder`, `Discontinued`, `InStock`, `InStoreOnly`,
 
 | PIBRAS | `availability` | Classificação |
 |---|---|---|
-| `available` | `InStock` | exato |
-| `reserved` | `Reserved` | exato |
+| `available` | `InStock` | **aproximado** — disponibilidade imobiliária não é estoque de produto |
+| `reserved` | `Reserved` | **aproximado** — os ciclos comerciais não são equivalentes |
 | `under_offer` | `LimitedAvailability` | lossy |
-| `sold` | `SoldOut` | exato |
+| `sold` | `SoldOut` | **lossy** — disponibilidade não preserva a natureza da transação |
 | `rented` | `SoldOut` | **lossy** — `ItemAvailability` não distingue vendido de alugado |
 | `suspended` | `OutOfStock` | lossy |
 | `draft` | *não publicado* | n/a |
@@ -178,4 +180,5 @@ Campos declaradamente **não** round-trippable, e por quê:
 
 - Exportador: `scripts/export_schema_org.py`
 - Fixtures: `tests/golden/schema-org.*.json`
-- Casos: `tests/golden/conformance-cases.json` (`applies_to: ["mappings"]`)
+- Casos: `tests/golden/conformance-cases.json` (`validator: "schema-org"`)
+- Gate: `uv run scripts/validate_conformance.py` executa exportação, round-trip, preço decimal exato, rejeição de campos restritos e estados não publicáveis.
