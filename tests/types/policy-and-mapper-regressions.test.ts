@@ -253,3 +253,21 @@ test("OPERATOR_BRAND resolves to a real value, not a placeholder", () => {
   assert.ok(!OPERATOR_BRAND.includes("{{"), "brand must not be an unsubstituted placeholder");
   assert.ok(OPERATOR_BRAND.length > 0);
 });
+
+/* ------------------------------------------------------------------ *
+ * ReDoS: a variante anterior do parser de área retrocedia de forma
+ * polinomial em entrada adversária vinda de CSV não confiável.
+ * ------------------------------------------------------------------ */
+
+test("area parsing stays linear on adversarial whitespace", () => {
+  const hostile = `1${" ".repeat(50_000)}m2x`;
+  const started = process.hrtime.bigint();
+  parseAreaM2(hostile);
+  const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
+  assert.ok(elapsedMs < 100, `parsing took ${elapsedMs.toFixed(1)}ms; expected linear behaviour`);
+});
+
+test("area parsing tolerates internal whitespace", () => {
+  assert.equal(parseAreaM2(" 1.250  m2 "), 1250);
+  assert.equal(parseAreaM2("120m²"), 120);
+});
