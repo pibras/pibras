@@ -20,6 +20,6 @@
     "noEmit": true,
     "incremental": false
   },
-  "include": ["types/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
+  "include": ["types/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts", "src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
