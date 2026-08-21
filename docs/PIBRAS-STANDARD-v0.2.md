@@ -1,13 +1,15 @@
-# PIBRAS Standard v0.2 Draft
+# PIBRAS Standard v0.2
 
 ## Padrão aberto, governança e plano de implementação para dados imobiliários no Brasil
 
 **Versão:** v0.2  
-**Status:** draft de reconciliação / RFC  
+**Status:** normativo — aceito via [PIBRAS-RFC-001](rfcs/accepted-001-v0.2-reconciliation.md)  
 **Data:** 19 de junho de 2026  
 **Base:** revisão do documento `PIBRAS_conceitos_completos.md`, incorporando feedback estratégico, lacunas técnicas e considerações de implementação.
 
-> Este documento ainda não substitui a baseline técnica v0.1.0. Ele define o alvo de reconciliação descrito em `mappings/v0.1.0-code-to-v0.2.md`.
+> Aceito como padrão vigente via PIBRAS-RFC-001 (2026-08-21). Substitui a
+> baseline técnica v0.1.0 como fonte de verdade; o De/Para permanece em
+> `mappings/v0.1.0-code-to-v0.2.md`.
 
 ---
 
@@ -1502,7 +1504,7 @@ scripts/
 docs/
   PIBRAS-STANDARD-v0.1.md
   PROPERTY-STANDARD-v0.1.md
-  PIBRAS-STANDARD-v0.2-draft.md
+  PIBRAS-STANDARD-v0.2.md
   VERSIONING.md
   lgpd.md
   exposure-policy.md

@@ -1,6 +1,6 @@
 # PIBRAS release policy — validated against schema/release-policy.schema.json
 policy_version: "0.1.0"
-phase: identity
+phase: rfc_accepted
 identity:
   neutral_org: pibras
   canonical_host: pibras.ibvi.ai
@@ -15,3 +15,7 @@ approvals:
     approver: Ronaldo
     date: "2026-07-10"
     evidence: "Session approval: neutral org Ibvi, host pibras.ibvi.ai, repo pibras/pibras"
+  - gate: rfc
+    approver: Ronaldo
+    date: "2026-08-21"
+    review_reference: "https://github.com/pibras/pibras/pull/9 (aceitação de PIBRAS-RFC-001)"
