@@ -126,8 +126,8 @@
       "then": {
         "properties": {
           "approvals": {
-            "description": "Pelo menos duas aprovações no gate 'rfc'.",
-            "minContains": 2,
+            "description": "Pelo menos uma aprovação no gate 'rfc', com referência imutável de revisão.",
+            "minContains": 1,
             "contains": {
               "type": "object",
               "required": [

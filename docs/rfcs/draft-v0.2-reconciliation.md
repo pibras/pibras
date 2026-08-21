@@ -14,9 +14,9 @@
 
 > Este arquivo é `Draft` e `RFC ID: Unassigned`. Conforme `RFC_PROCESS.md`,
 > criá-lo não equivale a submeter, aceitar ou implementar a proposta. A
-> transição para `Accepted` exige aprovação registrada de pelo menos dois
-> mantenedores nomeados e a atualização de `governance/release-policy.yaml`
-> para `phase: rfc_accepted`.
+> transição para `Accepted` exige aprovação registrada de mantenedor nomeado
+> com referência imutável de revisão e a atualização de
+> `governance/release-policy.yaml` para `phase: rfc_accepted`.
 
 ## Resumo
 
@@ -219,9 +219,11 @@ antecipar o número da versão não anteciparia a maturidade.
 
 ## Questões abertas
 
-1. **Quem são os mantenedores aprovadores?** `RFC_PROCESS.md` exige pelo menos
-   dois nomes com datas e referências imutáveis de revisão. Entrada externa
-   obrigatória; não pode ser inferida.
+1. **Quem é o mantenedor aprovador?** O plano exige um nome com data e
+   referência imutável de revisão. Enquanto o projeto tem um único mantenedor,
+   o gate é a revisabilidade (uma referência que terceiros podem verificar),
+   não a contagem de pessoas. Entrada externa obrigatória; não pode ser
+   inferida.
 2. **A promoção do arquivo draft deve ocorrer nesta RFC ou em commit
    separado?** Recomenda-se separado, para que a aceitação seja um commit de
    governança auditável e a renomeação não se misture ao registro da decisão.

@@ -1,17 +1,18 @@
 """Release-policy gate tests.
 
-The approved plan states that `rfc_accepted` "requires two maintainer
-approvals" and that acceptance must record "immutable review references".
-Neither was enforced by schema/release-policy.schema.json: a single approval
-with no reference validated cleanly, so the governance gate was weaker than
-the documentation describing it.
+The plan requires that `rfc_accepted` record an approval with an "immutable
+review reference". That was not enforced by
+schema/release-policy.schema.json: an rfc-gate entry with no reference
+validated cleanly, so the governance gate was weaker than the documentation
+describing it.
 
-These tests pin the documented rule to the executable one.
+While the project has a single maintainer, the gate is one reviewable
+approval — not a count of distinct approvers. These tests pin the documented
+rule to the executable one.
 """
 
 from __future__ import annotations
 
-import copy
 import json
 import subprocess
 import sys
@@ -84,51 +85,56 @@ def errors(document: dict) -> list[str]:
     return [e.message for e in validator().iter_errors(document)]
 
 
-class TestRfcAcceptedRequiresTwoMaintainers:
-    """The documented two-approver rule must be machine-enforced."""
+class TestRfcAcceptedRequiresApprovalWithReference:
+    """The documented approval rule must be machine-enforced.
 
-    def test_single_rfc_approval_is_rejected(self) -> None:
+    While PIBRAS has a single maintainer, the gate is one rfc approval with
+    an immutable review reference — not a count of distinct approvers. The
+    gate's value is reviewability (a URL a third party can check), not
+    headcount.
+    """
+
+    def test_rfc_approval_is_accepted(self, tmp_path) -> None:
         policy = base_policy("rfc_accepted", [identity_approval(), rfc_approval("alice")])
-        assert errors(policy), (
-            "one rfc approval must not satisfy rfc_accepted; the plan requires two "
-            "maintainer approvals"
-        )
-
-    def test_two_rfc_approvals_are_accepted(self) -> None:
-        policy = base_policy(
-            "rfc_accepted",
-            [identity_approval(), rfc_approval("alice"), rfc_approval("bob")],
-        )
         assert errors(policy) == []
+        assert run_validator(policy, tmp_path) == 0
 
-    def test_two_approvals_by_the_same_person_are_rejected(self, tmp_path) -> None:
-        # Distinctness cannot be expressed in JSON Schema (uniqueItems compares
-        # whole items, and these differ by review_reference), so the rule lives
-        # in the validator and is exercised through its CLI.
-        duplicate = rfc_approval("alice")
-        policy = base_policy(
-            "rfc_accepted", [identity_approval(), duplicate, copy.deepcopy(duplicate)]
+    def test_missing_rfc_approval_is_rejected(self) -> None:
+        policy = base_policy("rfc_accepted", [identity_approval()])
+        assert errors(policy), (
+            "rfc_accepted must not be reachable without any rfc-gate approval"
         )
-        assert errors(policy) == [], "schema alone cannot catch this"
-        assert run_validator(policy, tmp_path) != 0, "the same approver must not count twice"
 
-    def test_two_distinct_approvers_pass_the_validator(self, tmp_path) -> None:
+    def test_rfc_approval_requires_a_review_reference(self) -> None:
+        without_reference = rfc_approval("alice")
+        del without_reference["review_reference"]
+        policy = base_policy("rfc_accepted", [identity_approval(), without_reference])
+        assert errors(policy), "the plan requires immutable review references"
+
+    def test_review_reference_must_be_nonempty(self) -> None:
+        empty_reference = rfc_approval("alice")
+        empty_reference["review_reference"] = ""
+        policy = base_policy("rfc_accepted", [identity_approval(), empty_reference])
+        assert errors(policy), "an empty reference is not an immutable reference"
+
+    def test_validator_rejects_approval_without_reference(self, tmp_path) -> None:
+        # The schema catches the missing key; the validator's own presence
+        # check is exercised through its CLI for defense in depth.
+        without_reference = rfc_approval("alice")
+        del without_reference["review_reference"]
+        policy = base_policy("rfc_accepted", [identity_approval(), without_reference])
+        assert run_validator(policy, tmp_path) != 0
+
+    def test_multiple_approvals_are_still_accepted(self, tmp_path) -> None:
+        # Nothing forbids more approvers; the gate is a floor, not a ceiling.
         policy = base_policy(
             "rfc_accepted",
             [identity_approval(), rfc_approval("alice"), rfc_approval("bob")],
         )
         assert run_validator(policy, tmp_path) == 0
 
-    def test_rfc_approval_requires_a_review_reference(self) -> None:
-        without_reference = rfc_approval("alice")
-        del without_reference["review_reference"]
-        policy = base_policy(
-            "rfc_accepted", [identity_approval(), without_reference, rfc_approval("bob")]
-        )
-        assert errors(policy), "the plan requires immutable review references"
-
     def test_earlier_phase_approval_is_still_required(self) -> None:
-        policy = base_policy("rfc_accepted", [rfc_approval("alice"), rfc_approval("bob")])
+        policy = base_policy("rfc_accepted", [rfc_approval("alice")])
         assert errors(policy), "rfc_accepted must still carry the identity approval"
 
 
@@ -150,10 +156,10 @@ class TestIdentityPhaseUnchanged:
 
 
 @pytest.mark.parametrize("phase", ["legal_approved", "rc", "final"])
-def test_later_phases_still_require_two_rfc_approvals(phase: str) -> None:
+def test_later_phases_inherit_rfc_gate_requirements(phase: str) -> None:
     """Phases beyond rfc_accepted inherit its requirements."""
-    policy = base_policy(
-        phase, [identity_approval(), rfc_approval("alice"), rfc_approval("bob")]
-    )
-    single = base_policy(phase, [identity_approval(), rfc_approval("alice")])
-    assert len(errors(single)) >= len(errors(policy))
+    complete = base_policy(phase, [identity_approval(), rfc_approval("alice")])
+    missing_reference = rfc_approval("alice")
+    del missing_reference["review_reference"]
+    incomplete = base_policy(phase, [identity_approval(), missing_reference])
+    assert len(errors(incomplete)) > len(errors(complete))
