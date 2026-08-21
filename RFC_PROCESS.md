@@ -21,7 +21,7 @@ Arquivos em `docs/rfcs/draft-*.md` permanecem `Draft` e usam `RFC ID: Unassigned
 | [`docs/rfcs/draft-offer-fsm.md`](docs/rfcs/draft-offer-fsm.md) | Draft / Unassigned | Nenhum |
 | [`docs/rfcs/draft-money-settlement.md`](docs/rfcs/draft-money-settlement.md) | Draft / Unassigned | Nenhum |
 | [`docs/rfcs/draft-presentation-context.md`](docs/rfcs/draft-presentation-context.md) | Draft / Unassigned | Nenhum |
-| [`docs/rfcs/draft-v0.2-reconciliation.md`](docs/rfcs/draft-v0.2-reconciliation.md) | Draft / Unassigned | Nenhum |
+| [`docs/rfcs/accepted-001-v0.2-reconciliation.md`](docs/rfcs/accepted-001-v0.2-reconciliation.md) | Accepted (PIBRAS-RFC-001) | v0.2 promovida a padrão vigente; ver `governance/release-policy.yaml` |
 
 ## Fluxo
 
