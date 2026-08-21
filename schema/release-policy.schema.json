@@ -82,6 +82,11 @@
           },
           "evidence": {
             "type": "string"
+          },
+          "review_reference": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Referência imutável de revisão (URL de PR, commit ou ata)."
           }
         }
       }
@@ -109,23 +114,33 @@
       "if": {
         "properties": {
           "phase": {
-            "const": "rfc_accepted"
+            "enum": [
+              "rfc_accepted",
+              "legal_approved",
+              "rc",
+              "final"
+            ]
           }
         }
       },
       "then": {
         "properties": {
           "approvals": {
+            "description": "Pelo menos uma aprovação no gate 'rfc', com referência imutável de revisão.",
+            "minContains": 1,
             "contains": {
               "type": "object",
+              "required": [
+                "gate",
+                "approver",
+                "date",
+                "review_reference"
+              ],
               "properties": {
                 "gate": {
                   "const": "rfc"
                 }
-              },
-              "required": [
-                "gate"
-              ]
+              }
             }
           }
         }
