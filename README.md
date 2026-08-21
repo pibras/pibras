@@ -12,7 +12,7 @@ O README é o índice de autoridade. Ele não substitui os documentos técnicos;
 |---|---|---|
 | [`docs/PIBRAS-STANDARD-v0.1.md`](docs/PIBRAS-STANDARD-v0.1.md) | Fundador / histórico | Consolidação original da visão, terminologia, manifesto e roadmap. Não é mais a fonte única para decisões técnicas. |
 | [`docs/PROPERTY-STANDARD-v0.1.md`](docs/PROPERTY-STANDARD-v0.1.md) | Baseline técnica v0.1.0 | Fonte de verdade dos artefatos atuais em `schema/`, `types/`, `db/` e `examples/`. |
-| [`docs/PIBRAS-STANDARD-v0.2-draft.md`](docs/PIBRAS-STANDARD-v0.2-draft.md) | Draft de reconciliação | Próximo padrão proposto. Preserva boas decisões da v0.1.0 técnica e corrige lacunas de governança, LGPD, autorização e conformidade. |
+| [`docs/PIBRAS-STANDARD-v0.2.md`](docs/PIBRAS-STANDARD-v0.2.md) | Normativo v0.2 (aceito) | Padrão vigente, aceito via PIBRAS-RFC-001. Fonte de verdade; preserva boas decisões da v0.1.0 técnica e corrige lacunas de governança, LGPD, autorização e conformidade. |
 | [`docs/VERSIONING.md`](docs/VERSIONING.md) | Processo | Como versões, RFCs, compatibilidade e promoção de draft funcionam. |
 | [`GOVERNANCE.md`](GOVERNANCE.md) | Governança | Papéis, autoridade de mudança e rito de publicação. |
 | [`RFC_PROCESS.md`](RFC_PROCESS.md) | Processo | Como propor, revisar e aceitar mudanças normativas. |
@@ -24,7 +24,7 @@ O README é o índice de autoridade. Ele não substitui os documentos técnicos;
 | [`docs/vision/intermediacao-alto-padrao.md`](docs/vision/intermediacao-alto-padrao.md) | Informative Draft | Hipóteses sociotécnicas; não altera o core. |
 | [`docs/profiles/high-end-brokerage-ux.md`](docs/profiles/high-end-brokerage-ux.md) | Application Profile Draft | Resultados de interação e privacidade; sem certificação. |
 | [`docs/profiles/high-end-brokerage-implementation-matrix.md`](docs/profiles/high-end-brokerage-implementation-matrix.md) | Matriz informativa | Cobertura real e gaps; não declara paridade completa. |
-| [`docs/rfcs/`](docs/rfcs/) | RFC Drafts não atribuídas | Propostas de Offer FSM, Money/Settlement e Presentation Context; sem efeito até aprovação. |
+| [`docs/rfcs/`](docs/rfcs/) | RFCs | [PIBRAS-RFC-001](docs/rfcs/accepted-001-v0.2-reconciliation.md) aceita (v0.2); drafts de Offer FSM, Money/Settlement e Presentation Context não atribuídas, sem efeito até aprovação. |
 | [`mappings/v0.1.0-code-to-v0.2.md`](mappings/v0.1.0-code-to-v0.2.md) | Migração | De/Para entre artefatos atuais e o alvo v0.2. |
 
 ## Decisão de reconciliação v0.2
@@ -102,7 +102,7 @@ Os validadores standalone continuam sendo executados via `uv run scripts/...`; n
 
 ## Próximos passos
 
-1. Fechar o De/Para em [`mappings/v0.1.0-code-to-v0.2.md`](mappings/v0.1.0-code-to-v0.2.md).
-2. Promover ou ajustar [`docs/PIBRAS-STANDARD-v0.2-draft.md`](docs/PIBRAS-STANDARD-v0.2-draft.md) via RFC.
+1. ~~Fechar o De/Para em [`mappings/v0.1.0-code-to-v0.2.md`](mappings/v0.1.0-code-to-v0.2.md).~~ Concluído.
+2. ~~Promover [`docs/PIBRAS-STANDARD-v0.2.md`](docs/PIBRAS-STANDARD-v0.2.md) via RFC.~~ Concluído: aceito via [PIBRAS-RFC-001](docs/rfcs/accepted-001-v0.2-reconciliation.md) (2026-08-21).
 3. Completar a migração de `Owner` para `Party`/`Ownership` sem remover compatibilidade.
 4. Promover o runner de conformidade para CI.

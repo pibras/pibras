@@ -1,22 +1,20 @@
-# RFC Draft: reconciliação e aceitação do padrão v0.2
+# RFC-001: reconciliação e aceitação do padrão v0.2
 
 ## Metadados
 
 | Campo | Valor |
 |---|---|
-| RFC ID | Unassigned |
-| Status | Draft; não normativo |
+| RFC ID | PIBRAS-RFC-001 |
+| Status | Accepted |
 | Versão-alvo | v0.2 |
-| Implementação | Concluída em `main`; pendente de aceitação formal |
+| Implementação | Concluída em `main`; aceita por decisão registrada |
 | Compatibilidade esperada | Incompatível para writers de DDL; compatível para leitores |
 | Data | 2026-08-21 |
-| Revisores | Nenhum registrado |
+| Revisores | Ronaldo (mantenedor), 2026-08-21, referência: PR de aceitação (URL registrada no merge) |
 
-> Este arquivo é `Draft` e `RFC ID: Unassigned`. Conforme `RFC_PROCESS.md`,
-> criá-lo não equivale a submeter, aceitar ou implementar a proposta. A
-> transição para `Accepted` exige aprovação registrada de mantenedor nomeado
-> com referência imutável de revisão e a atualização de
-> `governance/release-policy.yaml` para `phase: rfc_accepted`.
+> Aceita conforme `RFC_PROCESS.md`: aprovação registrada de mantenedor
+> nomeado com referência imutável de revisão, e `governance/release-policy.yaml`
+> avançado para `phase: rfc_accepted` neste mesmo registro.
 
 ## Resumo
 
@@ -54,7 +52,7 @@ ratifica o que existe, e não introduz superfície nova.
 Ao ser aceita:
 
 1. `docs/PIBRAS-STANDARD-v0.2-draft.md` passa a `docs/PIBRAS-STANDARD-v0.2.md`
-   com `Status: normativo`;
+   com `Status: normativo` — **executado neste registro**;
 2. `README.md` passa a apontar a v0.2 como fonte de verdade, movendo a v0.1.0
    para histórico;
 3. `governance/release-policy.yaml` avança para `phase: rfc_accepted`,
@@ -219,11 +217,8 @@ antecipar o número da versão não anteciparia a maturidade.
 
 ## Questões abertas
 
-1. **Quem é o mantenedor aprovador?** O plano exige um nome com data e
-   referência imutável de revisão. Enquanto o projeto tem um único mantenedor,
-   o gate é a revisabilidade (uma referência que terceiros podem verificar),
-   não a contagem de pessoas. Entrada externa obrigatória; não pode ser
-   inferida.
+1. **Quem é o mantenedor aprovador?** Resolvido: Ronaldo, 2026-08-21,
+   aprovando o PR de aceitação desta RFC.
 2. **A promoção do arquivo draft deve ocorrer nesta RFC ou em commit
    separado?** Recomenda-se separado, para que a aceitação seja um commit de
    governança auditável e a renomeação não se misture ao registro da decisão.

@@ -15,7 +15,7 @@
 |---|---|---|
 | v0.1 | Fundador / histórico | `docs/PIBRAS-STANDARD-v0.1.md` |
 | v0.1.0 | Baseline técnica atual | `docs/PROPERTY-STANDARD-v0.1.md`, `schema/mbras.schema.json`, `types/mbras.ts`, `db/schema.sql`, `examples/property.sample.json` |
-| v0.2 | Draft de reconciliação | `docs/PIBRAS-STANDARD-v0.2-draft.md`, `mappings/v0.1.0-code-to-v0.2.md`, `openapi.yaml` |
+| v0.2 | Aceito (padrão vigente) | `docs/PIBRAS-STANDARD-v0.2.md`, `mappings/v0.1.0-code-to-v0.2.md`, `openapi.yaml` — aceito via [PIBRAS-RFC-001](rfcs/accepted-001-v0.2-reconciliation.md), 2026-08-21 |
 
 ## Regra de promoção
 
