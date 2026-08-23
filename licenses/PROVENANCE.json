@@ -1,0 +1,26 @@
+{
+  "status": "adopted",
+  "adopted_at": "2026-08-23",
+  "description": "Provenance record for the PIBRAS licence texts adopted at the legal gate on 2026-08-23 (governance/release-policy.yaml, phase legal_approved). LICENSE-CODE and LICENSE-DOCS are verbatim copies of the files below.",
+  "retrieved_at": "2026-08-23T17:56:06Z",
+  "licences": [
+    {
+      "id": "Apache-2.0",
+      "spdx": "Apache-2.0",
+      "file": "licenses/Apache-2.0.txt",
+      "source_url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "byte_length": 11358,
+      "line_count": 202
+    },
+    {
+      "id": "CC-BY-4.0",
+      "spdx": "CC-BY-4.0",
+      "file": "licenses/CC-BY-4.0.txt",
+      "source_url": "https://creativecommons.org/licenses/by/4.0/legalcode.txt",
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411",
+      "byte_length": 18657,
+      "line_count": 396
+    }
+  ]
+}

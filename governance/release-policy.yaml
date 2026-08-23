@@ -1,6 +1,6 @@
 # PIBRAS release policy — validated against schema/release-policy.schema.json
 policy_version: "0.1.0"
-phase: rfc_accepted
+phase: legal_approved
 identity:
   neutral_org: pibras
   canonical_host: pibras.ibvi.ai
@@ -19,3 +19,8 @@ approvals:
     approver: Ronaldo
     date: "2026-08-21"
     review_reference: "https://github.com/pibras/pibras/pull/9 (aceitação de PIBRAS-RFC-001)"
+  - gate: legal
+    approver: Ronaldo
+    date: "2026-08-23"
+    review_reference: "licenses/PROVENANCE.json — Apache-2.0 sha256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30; CC-BY-4.0 sha256 9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
+    evidence: "Session approval 2026-08-23: dual licence adopted — Apache-2.0 for code/schemas/SDKs/validators (LICENSE-CODE), CC BY 4.0 for documentation/specification text (LICENSE-DOCS); per-path map in licenses/APPLICABILITY.md, boundary cases (openapi.yaml, examples/, tests/golden/, governance/*.yaml) resolved to Apache-2.0"

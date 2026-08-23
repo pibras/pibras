@@ -1,8 +1,14 @@
-License decision pending.
+PIBRAS is dual-licensed (adopted 2026-08-23, legal gate in
+governance/release-policy.yaml):
 
-Recommended split before public release:
+- Code, schemas, SDKs, validators, and other technical artifacts:
+  Apache License 2.0 — see LICENSE-CODE.
+- Documentation and specification text:
+  Creative Commons Attribution 4.0 International (CC BY 4.0) — see
+  LICENSE-DOCS.
 
-- Code, schemas, SDKs, and validators: Apache-2.0.
-- Documentation and specification text: CC BY 4.0.
+The per-path applicability map is licenses/APPLICABILITY.md. Provenance
+(source URLs, retrieval timestamps, SHA-256) for both licence texts is
+recorded in licenses/PROVENANCE.json.
 
-Do not publish this repository as an open standard until the final license files are approved.
+SPDX-License-Identifier: Apache-2.0 AND CC-BY-4.0
