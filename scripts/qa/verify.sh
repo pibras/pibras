@@ -27,7 +27,7 @@ npm ci
 uv run --no-sync pip-audit --local --strict
 npm audit --audit-level=moderate
 git ls-files -z | xargs -0 uv run --no-sync detect-secrets-hook --baseline .secrets.baseline
-uv run --no-sync pytest
+"${py[@]}" -m pytest
 npm run typecheck
 npm run test:types
 "${py[@]}" scripts/validate_conformance.py
