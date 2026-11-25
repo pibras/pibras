@@ -4,6 +4,16 @@ Este documento define **como** uma decisão de publicação do PIBRAS é tomada 
 
 Fontes: [`docs/plans/v0.2-prontidao-publica.md`](plans/v0.2-prontidao-publica.md), [`docs/VERSIONING.md`](VERSIONING.md), [`governance/release-policy.yaml`](../governance/release-policy.yaml), [`schema/release-policy.schema.json`](../schema/release-policy.schema.json), [`docs/rfcs/accepted-001-v0.2-reconciliation.md`](rfcs/accepted-001-v0.2-reconciliation.md), `.github/workflows/ci.yml`.
 
+## Aplicação ao candidato integrado
+
+A matriz abaixo registra o levantamento inicial em `5411f62`. As marcações de ausência e as observações sobre o workflow descrevem aquele levantamento. Para avaliar o candidato atual, use o roteiro abaixo e registre o resultado fora da árvore versionada, vinculado ao SHA verificado.
+
+| Critérios | Verificação do candidato |
+|---|---|
+| Segurança, governança, contratos, titularidade, HTTP, privacidade e DDL | Em clone limpo, executar os modos `conformance` e `contracts` de `scripts/qa/verify.sh`. Registrar o SHA, resultados das duas auditorias, contagens, linhas de paridade, versão do Postgres e mutações detectadas. |
+| Interoperabilidade e integridade | Construir dois ZIPs pelo procedimento em [PACKAGE.md](PACKAGE.md), comparar os bytes, extrair em diretório independente e executar o consumidor distribuído. Conferir que a alteração de um byte é rejeitada. |
+| Promoção | Associar execução da CI e digest ao mesmo SHA. Encaminhar a divergência de magnitude monetária entre JSON Schema e Zod à RFC de Money/Settlement, registrar a decisão normativa e obter autorização de assinatura e promoção antes da publicação. |
+
 ## 1. Regras de leitura
 
 1. **Nenhuma aprovação é presumida.** Um critério só é `Verde` quando existe um registro de evidência (seção 6) com SHA, comando, código de saída, data e executor. Texto de plano, RFC ou changelog não substitui execução.
