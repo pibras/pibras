@@ -37,6 +37,10 @@ def evaluate(root):
     schema = json.loads((root / "schema/mbras.schema.json").read_text())
     Draft202012Validator.check_schema(schema)
     rows = corpus()
+    # Observations are not parity passes or a normative exception. A change in
+    # either runtime must be reviewed before removing the promotion blocker.
+    observations = json.loads((ROOT / "tests/contracts/compatibility-observations.json").read_text())
+    rows.extend(observations)
     inputs = [{k: row[k] for k in ("id", "entity", "input")} for row in rows]
     proc = subprocess.run(
         ["node", "--experimental-strip-types", str(ROOT / "scripts/evaluate_zod.ts"),
@@ -47,6 +51,7 @@ def evaluate(root):
         raise RuntimeError(f"Zod runtime failed: {proc.stderr}")
     zod = json.loads(proc.stdout)
     results = []
+    compatibility = []
     for row, observed in zip(rows, zod, strict=True):
         if observed["id"] != row["id"]:
             raise ValueError("misaligned Zod results")
@@ -58,9 +63,9 @@ def evaluate(root):
         valid = validator.is_valid(row["input"])
         expected = row["expected"]
         errors = []
-        if valid != expected:
+        if valid != (expected["json_schema"] if "decision" in row else expected):
             errors.append("json_schema.acceptance")
-        if observed["valid"] != expected:
+        if observed["valid"] != (expected["zod"] if "decision" in row else expected):
             errors.append("zod.acceptance")
         # JSON Schema annotates defaults, whereas Zod materializes them.
         # Check both against the same expected value, not against each other.
@@ -76,9 +81,15 @@ def evaluate(root):
                 # Nested objects may legitimately acquire additional defaults.
                 if not isinstance(value, (dict, list)) and json.dumps(observed["output"].get(key)) != json.dumps(value):
                     errors.append(f"zod.output.{key}")
-        results.append({"id": row["id"], "expected": expected, "json_schema": valid,
-                        "zod": observed["valid"], "errors": errors})
-    return {"status": "red" if any(r["errors"] for r in results) else "green", "rows": results}
+        result = {"id": row["id"], "expected": expected, "json_schema": valid,
+                  "zod": observed["valid"], "errors": errors}
+        if "decision" in row:
+            compatibility.append(result | {"decision": row["decision"]})
+        else:
+            results.append(result)
+    red = any(r["errors"] for r in results + compatibility)
+    return {"status": "red" if red else "green", "rows": results,
+            "compatibility_observations": compatibility}
 
 
 if __name__ == "__main__":

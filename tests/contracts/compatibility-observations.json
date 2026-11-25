@@ -1,0 +1,4 @@
+[
+  {"id":"money.above-safe-range","entity":"Money","input":{"amount":9007199254740992,"currency":"BRL"},"expected":{"json_schema":true,"zod":false},"decision":"docs/rfcs/draft-money-settlement.md"},
+  {"id":"money.below-safe-range","entity":"Money","input":{"amount":-9007199254740992,"currency":"BRL"},"expected":{"json_schema":true,"zod":false},"decision":"docs/rfcs/draft-money-settlement.md"}
+]

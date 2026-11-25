@@ -18,7 +18,11 @@ Propõe limite interoperável para `Money` em JSON/JavaScript e contratos separa
 
 ## Problema
 
-O DDL usa `BIGINT`; Zod usa `number().int()` sem limite safe integer. O core não possui `SplitRuleDraft` nem `SplitSettlement`. Exportadores não devem converter centavos por ponto flutuante binário.
+A [norma v0.2](../PIBRAS-STANDARD-v0.2.md) exige valores na menor unidade monetária, mas não fixa um limite de magnitude no wire. O DDL usa `BIGINT`. Na implementação com Zod 4.6.7, `number().int()` rejeita `±9007199254740992` centavos; o JSON Schema aceita esses mesmos inteiros. Esses valores são representáveis como números binários, mas estão fora da faixa de inteiros seguros consecutivos do JavaScript.
+
+Reprodução após instalação congelada: `uv run --frozen python scripts/check_semantic_parity.py`. A seção `compatibility_observations` registra os dois resultados de cada fronteira; não são casos de paridade aprovada. Mudança em qualquer resultado torna o gate vermelho para revisão. **Antes da promoção**, o mantenedor deve decidir a faixa interoperável via RFC e a estratégia de compatibilidade; este ensaio não autoriza restringir o schema nem relaxar o SDK.
+
+O core não possui `SplitRuleDraft` nem `SplitSettlement`. Exportadores não devem converter centavos por ponto flutuante binário.
 
 ## Proposta
 
