@@ -271,3 +271,43 @@ test("area parsing tolerates internal whitespace", () => {
   assert.equal(parseAreaM2(" 1.250  m2 "), 1250);
   assert.equal(parseAreaM2("120m²"), 120);
 });
+
+const publishContext = { action: "publish", channel_type: "portal", caller_role: "broker" } as const;
+const allowPublish: ExposurePolicy["rules"][number] = {
+  priority: 1, effect: "allow", actions: ["publish"], fields: [], roles: ["broker"], conditions: {},
+};
+
+test("channel allowlist distinguishes empty, absent match, explicit channel and wildcard", () => {
+  for (const [channels, expected] of [
+    [[], "deny"], [["crm"], "deny"], [["portal"], "allow"], [["*"], "allow"],
+  ] as const) {
+    const evaluated = ExposurePolicyEvaluator.evaluate(policy({
+      exposure_level: "public", allowed_channels: [...channels], rules: [allowPublish],
+    }), publishContext);
+    assert.equal(evaluated.decision, expected);
+  }
+});
+
+test("conditional publication needs trusted assignment, not merely the broker role", () => {
+  const conditionalPolicy = policy({ exposure_level: "public",
+    rules: [{ ...allowPublish, conditions: { broker_is_assigned: true } }] });
+  const property = { id: "demo" } as never;
+  const project = (assignment?: boolean) => ExposurePolicyEvaluator.projectForChannel({
+    property, policy: conditionalPolicy,
+    context: assignment === undefined ? publishContext : { ...publishContext, broker_is_assigned: assignment },
+  });
+  assert.equal(project(), null);
+  assert.equal(project(false), null);
+  assert.deepEqual(project(true)?.property, property);
+});
+
+test("unknown conditions fail closed even with a permissive fallback or another allow rule", () => {
+  for (const effect of ["allow", "deny"] as const) {
+    for (const conditions of [{ unimplemented: true }, { broker_is_assigned: "true" }]) {
+      const result = ExposurePolicyEvaluator.evaluate(policy({ exposure_level: "public", default_decision: "allow",
+        rules: [allowPublish, { ...allowPublish, effect, conditions }],
+      }), { ...publishContext, broker_is_assigned: true });
+      assert.equal(result.decision, "deny");
+    }
+  }
+});
