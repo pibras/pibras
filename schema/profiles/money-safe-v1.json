@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pibras.ibvi.ai/schema/profiles/money-safe-v1.json",
+  "title": "PIBRAS Money — perfil de intercâmbio seguro v1",
+  "$ref": "../mbras.schema.json#/$defs/Money",
+  "properties": {
+    "amount": {"minimum": -9007199254740991, "maximum": 9007199254740991}
+  }
+}
