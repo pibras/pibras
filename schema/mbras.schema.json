@@ -678,6 +678,14 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id","tenant_id","request_type","status","requested_at","due_at"],
+      "if": { "properties": { "request_type": { "const": "deletion" }, "status": { "const": "fulfilled" } } },
+      "then": {
+        "required": ["resolution_action","affected_record_ids"],
+        "properties": {
+          "resolution_action": { "$ref": "#/$defs/RetentionAction" },
+          "affected_record_ids": { "minItems": 1 }
+        }
+      },
       "properties": {
         "id": { "type": "string", "format": "uuid" },
         "tenant_id": { "type": "string", "format": "uuid" },
@@ -845,6 +853,11 @@
     "DSARPropagation": {
       "type": "object", "additionalProperties": false,
       "required": ["id","data_subject_request_id","partner_relationship_id","status","action","due_at","updated_at"],
+      "if": { "properties": { "status": { "const": "fulfilled" } } },
+      "then": {
+        "required": ["evidence_ref"],
+        "properties": { "evidence_ref": { "type": "string", "pattern": "\\S" } }
+      },
       "properties": {
         "id": { "type": "string", "format": "uuid" }, "data_subject_request_id": { "type": "string", "format": "uuid" }, "partner_relationship_id": { "type": "string", "format": "uuid" },
         "status": { "$ref": "#/$defs/DSARPropagationStatus" }, "action": { "$ref": "#/$defs/RetentionAction" }, "sent_at": { "type": ["string","null"], "format": "date-time" },

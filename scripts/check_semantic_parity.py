@@ -30,6 +30,25 @@ def corpus():
     add("ownership.neither", "Ownership", {k: v for k, v in ownership.items() if k != "property_id"}, False)
     add("ownership.both-null", "Ownership", ownership | {"property_id": None, "unit_id": None}, False)
     add("ownership.party-missing", "Ownership", {k: v for k, v in ownership.items() if k != "party_id"}, False)
+    def golden(filename):
+        return json.loads((ROOT / "tests/golden" / filename).read_text())["payload"]
+
+    propagation = golden("dsar-propagation.fulfilled.json")
+    add("dsar.propagation.fulfilled", "DSARPropagation", propagation)
+    for label, ref in (("null", None), ("empty", ""), ("blank", "  ")):
+        add("dsar.propagation.evidence-" + label, "DSARPropagation", propagation | {"evidence_ref": ref}, False)
+    no_ref = {k: v for k, v in propagation.items() if k != "evidence_ref"}
+    add("dsar.propagation.evidence-missing", "DSARPropagation", no_ref, False)
+    add("dsar.propagation.pending", "DSARPropagation", no_ref | {"status": "pending", "fulfilled_at": None})
+    deletion = golden("data-subject-request.deletion-fulfilled.json")
+    add("dsar.deletion.fulfilled", "DataSubjectRequest", deletion)
+    for field, bad in (("resolution_action", None), ("affected_record_ids", [])):
+        add("dsar.deletion.invalid-" + field, "DataSubjectRequest", deletion | {field: bad}, False)
+        add("dsar.deletion.missing-" + field, "DataSubjectRequest",
+            {k: v for k, v in deletion.items() if k != field}, False)
+    no_effect = {k: v for k, v in deletion.items() if k not in ("resolution_action", "affected_record_ids")}
+    add("dsar.deletion.in-progress", "DataSubjectRequest", no_effect | {"status": "in_progress", "fulfilled_at": None})
+    add("dsar.access.fulfilled", "DataSubjectRequest", no_effect | {"request_type": "access"})
     return rows
 
 
