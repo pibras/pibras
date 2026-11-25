@@ -1,0 +1,445 @@
+{
+  "entities": {
+    "propertyA": "00000000-0000-4000-8000-000000000003",
+    "unitA": "00000000-0000-4000-8000-000000000004",
+    "propertyEvidence": {
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      }
+    },
+    "ownerA": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Titular sintético A",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-owner-A",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "owner_type": "individual",
+      "notes": "Apenas para ensaio",
+      "marketing_consent": false
+    },
+    "partyA": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Titular sintético A",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-owner-A",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "party_type": "individual"
+    },
+    "linkA": {
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "owner_id": "00000000-0000-4000-8000-000000000001",
+      "ownership_pct": 60,
+      "owner_role": "owner",
+      "is_primary": true
+    },
+    "propertyOwnershipA": {
+      "id": "7354bfa0-7c3d-5ef5-b386-47ac47ab0880",
+      "party_id": "00000000-0000-4000-8000-000000000001",
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "ownership_pct": 60,
+      "owner_role": "owner",
+      "is_primary": true,
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      }
+    },
+    "ownerB": {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "name": "Titular sintético B",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-owner-B",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "owner_type": "individual",
+      "notes": "Apenas para ensaio",
+      "marketing_consent": false
+    },
+    "partyB": {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "name": "Titular sintético B",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-owner-B",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "party_type": "individual"
+    },
+    "linkB": {
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "owner_id": "00000000-0000-4000-8000-000000000002",
+      "ownership_pct": 40,
+      "owner_role": "owner",
+      "is_primary": false
+    },
+    "propertyOwnershipB": {
+      "id": "93707446-b4c7-515d-b084-e424b082ca19",
+      "party_id": "00000000-0000-4000-8000-000000000002",
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "ownership_pct": 40,
+      "owner_role": "owner",
+      "is_primary": false,
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      }
+    },
+    "unitOwnershipA": {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "party_id": "00000000-0000-4000-8000-000000000001",
+      "ownership_pct": 60,
+      "owner_role": "owner",
+      "is_primary": true,
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-unit-link",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "unit_id": "00000000-0000-4000-8000-000000000004"
+    },
+    "conflictPartyA": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Outro nome sintético",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-owner-A",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "party_type": "individual"
+    },
+    "conflictOwnershipA": {
+      "id": "7354bfa0-7c3d-5ef5-b386-47ac47ab0880",
+      "party_id": "00000000-0000-4000-8000-000000000001",
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "ownership_pct": 30,
+      "owner_role": "owner",
+      "is_primary": true,
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      }
+    },
+    "linkSparseA": {
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "owner_id": "00000000-0000-4000-8000-000000000001"
+    },
+    "sparseOwnershipA": {
+      "id": "7354bfa0-7c3d-5ef5-b386-47ac47ab0880",
+      "party_id": "00000000-0000-4000-8000-000000000001",
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      }
+    },
+    "linkUnknownA": {
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "owner_id": "00000000-0000-4000-8000-000000000001",
+      "ownership_pct": null
+    },
+    "unknownOwnershipA": {
+      "id": "7354bfa0-7c3d-5ef5-b386-47ac47ab0880",
+      "party_id": "00000000-0000-4000-8000-000000000001",
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "ownership_pct": null
+    },
+    "linkOverB": {
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "owner_id": "00000000-0000-4000-8000-000000000002",
+      "ownership_pct": 41,
+      "owner_role": "owner",
+      "is_primary": false
+    },
+    "datedOwnershipA": {
+      "id": "7354bfa0-7c3d-5ef5-b386-47ac47ab0880",
+      "party_id": "00000000-0000-4000-8000-000000000001",
+      "property_id": "00000000-0000-4000-8000-000000000003",
+      "ownership_pct": 60,
+      "owner_role": "owner",
+      "is_primary": true,
+      "provenance": {
+        "source_system": "mbras_internal",
+        "source_record_id": "synthetic-property-3",
+        "trust_tier": 2,
+        "ingested_at": "2026-01-01T00:00:00Z"
+      },
+      "audit": {
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "version": 1,
+        "record_state": "active"
+      },
+      "starts_at": "2020-01-01"
+    }
+  },
+  "cases": [
+    {
+      "name": "legacy",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [
+        "linkA"
+      ],
+      "parties": [],
+      "ownerships": [],
+      "expected_parties": [
+        "partyA"
+      ],
+      "expected_ownerships": [
+        "propertyOwnershipA"
+      ]
+    },
+    {
+      "name": "canonical",
+      "owners": [],
+      "links": [],
+      "parties": [
+        "partyA"
+      ],
+      "ownerships": [
+        "unitOwnershipA"
+      ],
+      "expected_parties": [
+        "partyA"
+      ],
+      "expected_ownerships": [
+        "unitOwnershipA"
+      ]
+    },
+    {
+      "name": "mixed",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [
+        "linkA"
+      ],
+      "parties": [
+        "partyA"
+      ],
+      "ownerships": [
+        "propertyOwnershipA"
+      ],
+      "expected_parties": [
+        "partyA"
+      ],
+      "expected_ownerships": [
+        "propertyOwnershipA"
+      ]
+    },
+    {
+      "name": "coownership",
+      "owners": [
+        "ownerA",
+        "ownerB"
+      ],
+      "links": [
+        "linkA",
+        "linkB"
+      ],
+      "parties": [],
+      "ownerships": [],
+      "expected_parties": [
+        "partyA",
+        "partyB"
+      ],
+      "expected_ownerships": [
+        "propertyOwnershipA",
+        "propertyOwnershipB"
+      ]
+    },
+    {
+      "name": "identity-conflict",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [],
+      "parties": [
+        "conflictPartyA"
+      ],
+      "ownerships": [],
+      "reject": "party-conflict"
+    },
+    {
+      "name": "link-conflict",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [
+        "linkA"
+      ],
+      "parties": [
+        "partyA"
+      ],
+      "ownerships": [
+        "conflictOwnershipA"
+      ],
+      "reject": "link-conflict"
+    },
+    {
+      "name": "sparse",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [
+        "linkSparseA"
+      ],
+      "parties": [],
+      "ownerships": [],
+      "expected_parties": [
+        "partyA"
+      ],
+      "expected_ownerships": [
+        "sparseOwnershipA"
+      ]
+    },
+    {
+      "name": "unknown",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [
+        "linkUnknownA"
+      ],
+      "parties": [],
+      "ownerships": [],
+      "expected_parties": [
+        "partyA"
+      ],
+      "expected_ownerships": [
+        "unknownOwnershipA"
+      ]
+    },
+    {
+      "name": "aggregate-conflict",
+      "owners": [
+        "ownerA",
+        "ownerB"
+      ],
+      "links": [
+        "linkA",
+        "linkOverB"
+      ],
+      "parties": [],
+      "ownerships": [],
+      "reject": "aggregate-ownership"
+    },
+    {
+      "name": "dated-conflict",
+      "owners": [
+        "ownerA"
+      ],
+      "links": [
+        "linkA"
+      ],
+      "parties": [
+        "partyA"
+      ],
+      "ownerships": [
+        "datedOwnershipA"
+      ],
+      "reject": "link-conflict"
+    }
+  ]
+}
