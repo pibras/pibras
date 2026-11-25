@@ -42,6 +42,9 @@ REQUIRED_PATHS: Final = frozenset(
         "/listings/{listing_id}",
         "/properties/{property_id}/exposure-policy",
         "/conformance/cases",
+        "/privacy/sharing-decisions",
+        "/privacy/sharing-events",
+        "/privacy/dsar-propagations",
     )
 )
 # Every operation must declare the secured error surface; parameterized
@@ -164,10 +167,7 @@ def validate_security_scheme(spec: YamlObject) -> list[CheckFailure]:
     if not isinstance(bearer, dict) or bearer.get("type") != "http" or bearer.get("scheme") != "bearer":
         failures.append(CheckFailure(OPENAPI_PATH, "bearerAuth security scheme must be type=http scheme=bearer"))
     global_security = spec.get("security")
-    if not (
-        isinstance(global_security, list)
-        and any(isinstance(entry, dict) and "bearerAuth" in entry for entry in global_security)
-    ):
+    if global_security != [{"bearerAuth": []}]:
         failures.append(CheckFailure(OPENAPI_PATH, "global security must require bearerAuth"))
     return failures
 
@@ -242,19 +242,28 @@ def validate_operations(spec: YamlObject) -> list[CheckFailure]:
         failures.append(CheckFailure(OPENAPI_PATH, f"missing required path {missing}"))
     for path_name, path_item in paths.items():
         path_obj = as_object(path_item, f"paths.{path_name}")
-        operation = path_obj.get("get")
-        if operation is None:
-            continue
-        operation_obj = as_object(operation, f"paths.{path_name}.get")
-        if operation_obj.get("operationId") is None:
-            failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} GET missing operationId"))
-        responses = as_object(operation_obj.get("responses"), f"paths.{path_name}.get.responses")
-        required_statuses = {"200"} | set(SECURITY_RESPONSES)
-        if PATH_TEMPLATE.search(path_name):
-            required_statuses |= set(PARAMETERIZED_RESPONSES)
-        for status in sorted(required_statuses - responses.keys()):
-            failures.append(CheckFailure(OPENAPI_PATH, f"{path_name} GET missing {status} response"))
-        failures.extend(validate_path_parameters(path_name, operation_obj, spec))
+        for method in ("get", "post", "put", "patch", "delete", "head", "options", "trace"):
+            if method not in path_obj:
+                continue
+            op = as_object(path_obj[method], f"paths.{path_name}.{method}")
+            label = f"{path_name} {method.upper()}"
+            if op.get("x-implementation") not in ("local-server", "specification-only"):
+                failures.append(CheckFailure(OPENAPI_PATH, f"{label} missing implementation classification"))
+            if not op.get("operationId"):
+                failures.append(CheckFailure(OPENAPI_PATH, f"{label} missing operationId"))
+            public = (path_name, method) == ("/health", "get")
+            expected_security = [] if public else [{"bearerAuth": []}]
+            if op.get("security", spec.get("security")) != expected_security:
+                failures.append(CheckFailure(OPENAPI_PATH, f"{label} incorrect security requirement"))
+            responses = as_object(op.get("responses"), f"{label}.responses")
+            required_statuses = set() if public else set(SECURITY_RESPONSES)
+            if not {"200", "201"}.intersection(responses):
+                failures.append(CheckFailure(OPENAPI_PATH, f"{label} missing success response"))
+            if PATH_TEMPLATE.search(path_name):
+                required_statuses |= set(PARAMETERIZED_RESPONSES)
+            for status in sorted(required_statuses - responses.keys()):
+                failures.append(CheckFailure(OPENAPI_PATH, f"{label} missing {status} response"))
+            failures.extend(validate_path_parameters(path_name, op, spec))
     return failures
 
 

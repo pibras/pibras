@@ -29,7 +29,7 @@ Um gate verde prova somente as regras que ele implementa. `scripts/check_contrac
 | `Money { amount, currency }` | Parcial | DDL `BIGINT`; Zod `number().int()` | Definir limite safe integer e settlement via RFC. |
 | Entity resolution | Candidato v0.2 alinhado | `docs/entity-resolution.md`, `src/dedupe/matcher.ts`, fixtures `unit.*` | Thresholds 0.95/0.75; validar desempenho com dados representativos. |
 | Survivorship | Parcial/operacional | `src/survivorship/*`, `ingestion_record`, `pending_change` | Falta fluxo transacional e revisão ponta a ponta. |
-| `ExposurePolicyEvaluator` | Parcial/operacional | `src/policy/evaluator.ts`, fixtures de política | `conditions` não são executadas no runtime; não alegar CBAC completo. |
+| `ExposurePolicyEvaluator` | Parcial/operacional | `src/policy/evaluator.ts`, fixtures de política | o predicado booleano `broker_is_assigned` exige contexto confiável; condições não suportadas bloqueiam a projeção; não alegar CBAC completo. |
 | `property_public` | Limite estático endurecido | `db/schema.sql` | Consulta bases, exige listing público explícito e reduz geografia; política contextual permanece no engine. |
 | schema.org P4a | Candidato executável | mapping, exporter e fixtures `schema-org.*` | Gate executa round-trip e negativos; não é modelo canônico. |
 | RESO P4b | Bloqueado preventivamente | `mappings/reso-to-pibras.md` | Potencial incompatibilidade de licença requer revisão jurídica; candidatos não normativos. |

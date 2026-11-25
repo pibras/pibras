@@ -1,5 +1,14 @@
 [
   {
+    "id": "ownership-compatibility",
+    "title": "Ownership compatibility preserves relationships and rejects conflicts",
+    "version": "0.2",
+    "fixture_path": "tests/golden/ownership-compatibility.json",
+    "expected_result": "valid",
+    "validator": "ownership-compatibility",
+    "applies_to": ["mappings"]
+  },
+  {
     "id": "property-valid-v02-compatible",
     "title": "Property accepts v0.2 external_ids while keeping code compatibility",
     "version": "0.2-draft",

@@ -9,6 +9,8 @@ import type {
 } from "../../types/mbras.ts";
 
 export interface PolicyEvaluationContext {
+  /** Verified by the caller for this resource; never inferred from a role or request body. */
+  broker_is_assigned?: boolean;
   action: PolicyAction;
   channel_type: ChannelType;
   caller_role: string; // e.g. "public_website", "external_portal", "internal_broker", "director"
@@ -59,6 +61,20 @@ function allowlistFields<T extends Record<string, unknown>>(
   return projected;
 }
 
+// The canonical example defines a flat boolean assignment predicate. The
+// proposed condition AST is not part of the accepted contract.
+function conditionMatch(conditions: unknown, context: PolicyEvaluationContext): boolean | "unknown" {
+  if (conditions === undefined) return true; // schema default: {}
+  if (conditions === null || typeof conditions !== "object" || Array.isArray(conditions)) return "unknown";
+  const entries = Object.entries(conditions);
+  if (!entries.length) return true;
+  if (entries.length !== 1) return "unknown";
+  const [key, expected] = entries[0]!;
+  if (key !== "broker_is_assigned" || typeof expected !== "boolean"
+      || typeof context.broker_is_assigned !== "boolean") return "unknown";
+  return context.broker_is_assigned === expected;
+}
+
 export class ExposurePolicyEvaluator {
   /**
    * Avalia uma ExposurePolicy para uma dada ação e canal, seguindo a semântica default-deny.
@@ -72,15 +88,12 @@ export class ExposurePolicyEvaluator {
     const deniedFields: string[] = [];
 
     // 1. Verificação de canais permitidos
-    if (
-      policy.allowed_channels.length > 0 &&
-      !policy.allowed_channels.includes(context.channel_type) &&
-      !policy.allowed_channels.includes("*")
-    ) {
+    const channels = Array.isArray(policy.allowed_channels) ? policy.allowed_channels : [];
+    if (!channels.includes(context.channel_type) && !channels.includes("*")) {
       return {
         decision: "deny",
         reasons: [
-          `Channel '${context.channel_type}' is not in policy allowed_channels: [${policy.allowed_channels.join(", ")}]`,
+          `Channel '${context.channel_type}' is not in policy allowed_channels: [${channels.join(", ")}]`,
         ],
         masked_fields: [],
         denied_fields: ["*"],
@@ -113,6 +126,16 @@ export class ExposurePolicyEvaluator {
         rule.roles.includes("*");
 
       if (matchesAction && matchesRole) {
+        const condition = conditionMatch(rule.conditions, context);
+        if (condition === "unknown") {
+          return {
+            decision: "deny",
+            reasons: ["Condition unsupported or missing trusted context"],
+            masked_fields: [], denied_fields: ["*"], allowed_fields: [],
+          };
+        }
+        if (!condition) continue;
+
         if (rule.effect === "allow") {
           currentDecision = "allow";
           reasons.push(`Rule '${rule.id ?? "anonymous"}' ALLOWED action '${context.action}'`);

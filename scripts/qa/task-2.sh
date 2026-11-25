@@ -63,7 +63,7 @@ run_shell_fails() {
 }
 
 run_ok "npm-view-typescript" npm view typescript@7.0.2 version
-run_ok "npm-view-zod" npm view zod@4.4.3 version
+run_ok "npm-view-zod" npm view "zod@$(node -p "require('./package.json').dependencies.zod")" version
 run_shell_ok "uv-version" "test \"\$(uv --version)\" = \"uv 0.9.7 (0adb44480 2025-10-30)\""
 run_shell_ok "python-version" "test \"\$(uv run python -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))')\" = \"3.13.9\""
 run_shell_ok "node-version" "test \"\$(node --version)\" = \"v22.22.3\""
@@ -84,7 +84,7 @@ run_ok "detect-secrets-version" uv run detect-secrets --version
 run_ok "openapi-spec-validator-version" uv run openapi-spec-validator --version
 run_ok "shellcheck-task-2" uv run shellcheck scripts/qa/task-2.sh
 
-run_shell_ok "readme-assertion" 'grep -F "uv sync --frozen" README.md && grep -F "npm ci" README.md && grep -F "npm run typecheck" README.md && grep -F "npm run test:types" README.md && grep -F "scripts/qa/task-2.sh --report .omo/evidence/task-2-manifest.json" README.md'
+run_shell_ok "readme-assertion" 'grep -F "uv sync --frozen" README.md && grep -F "npm ci" README.md && grep -F "scripts/qa/verify.sh" README.md'
 
 TMP="$(mktemp -d)"
 cleanup() {

@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Padrão PIBRAS de Dados Imobiliários — Modelo Canônico (Postgres / Neon)
--- Versão 0.1.0 · 2026-06-18
--- Fonte de verdade: docs/PROPERTY-STANDARD-v0.1.md
+-- DDL de referência da v0.2 aceita; preserva os aliases da v0.1.0.
+-- Norma: docs/PIBRAS-STANDARD-v0.2.md
 --
 -- Convenções:
 --   * dinheiro: <campo>_amount BIGINT (centavos) + <campo>_currency currency
@@ -237,6 +237,10 @@ CREATE TRIGGER trg_building_touch BEFORE UPDATE ON building FOR EACH ROW EXECUTE
 CREATE TABLE unit (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   building_id     UUID REFERENCES building(id) ON DELETE SET NULL,
+  -- [NULL] compara igual a [NULL], sem reservar UUID sentinela. Assim a
+  -- FK composta também valida imóveis sem edifício (PIBRAS-INV-002).
+  building_match_key UUID[] GENERATED ALWAYS AS (ARRAY[building_id]) STORED,
+  UNIQUE (id, building_match_key),
   matricula       TEXT,                   -- chave durável de identidade física
   dedupe_key      TEXT,
   normalized_address_key TEXT,
@@ -374,6 +378,9 @@ CREATE TABLE property (
   code            TEXT,
   unit_id         UUID NOT NULL REFERENCES unit(id) ON DELETE RESTRICT,
   building_id     UUID REFERENCES building(id) ON DELETE SET NULL,
+  building_match_key UUID[] GENERATED ALWAYS AS (ARRAY[building_id]) STORED,
+  CONSTRAINT property_unit_building_match FOREIGN KEY (unit_id, building_match_key)
+    REFERENCES unit(id, building_match_key) DEFERRABLE INITIALLY DEFERRED,
   transaction_type transaction_type NOT NULL,
   property_status property_status NOT NULL DEFAULT 'draft',
   availability    availability,
@@ -785,6 +792,16 @@ CREATE TABLE data_subject_request (
   audit_log_ref TEXT,
   resolution_action retention_action,
   affected_record_ids UUID[] NOT NULL DEFAULT '{}',
+  -- JSON/Zod accept only a flat array of UUIDs (never null elements).
+  CONSTRAINT dsr_record_ids_shape CHECK (
+    CASE WHEN cardinality(affected_record_ids) = 0 THEN true
+         WHEN array_ndims(affected_record_ids) = 1 THEN array_position(affected_record_ids, NULL) IS NULL
+         ELSE false END
+  ),
+  CONSTRAINT dsr_fulfilled_deletion_evidence CHECK (
+    request_type <> 'deletion' OR status <> 'fulfilled'
+    OR (resolution_action IS NOT NULL AND cardinality(affected_record_ids) > 0)
+  ),
   notes         TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -986,7 +1003,7 @@ CREATE TABLE dsar_propagation (
   partner_relationship_id UUID NOT NULL REFERENCES partner_relationship(id) ON DELETE RESTRICT,
   sharing_event_id UUID REFERENCES sharing_event(id) ON DELETE RESTRICT,
   status          dsar_propagation_status NOT NULL DEFAULT 'pending',
-  external_reference TEXT,
+  external_reference TEXT, -- nome físico de DSARPropagation.evidence_ref
   sent_at         TIMESTAMPTZ,
   acknowledged_at TIMESTAMPTZ,
   fulfilled_at    TIMESTAMPTZ,
@@ -998,6 +1015,12 @@ CREATE TABLE dsar_propagation (
   CHECK (status <> 'sent' OR sent_at IS NOT NULL),
   CHECK (status <> 'acknowledged' OR acknowledged_at IS NOT NULL),
   CHECK (status <> 'fulfilled' OR fulfilled_at IS NOT NULL),
+  -- ECMAScript whitespace/line terminators, independent of database locale.
+  CONSTRAINT propagation_fulfilled_evidence CHECK (status <> 'fulfilled' OR (
+    external_reference IS NOT NULL AND btrim(external_reference,
+      U&'\0009\000A\000B\000C\000D\0020\00A0\1680\2000\2001\2002\2003\2004\2005\2006\2007\2008\2009\200A\2028\2029\202F\205F\3000\FEFF'
+    ) <> ''
+  )),
   CHECK (status <> 'failed' OR failure_code IS NOT NULL),
   UNIQUE (request_id, partner_relationship_id)
 );

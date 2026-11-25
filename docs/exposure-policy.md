@@ -44,3 +44,14 @@
 ## Verificação executável
 
 O runner `scripts/validate_conformance.py` torna esta semântica testável: avalia as `expected_decisions` do fixture `tests/golden/exposure-policy.default-deny.json` (incluindo `priority`/empate e o ramo `default_decision`) e aplica o projetor de mascaramento sobre `projection_expectation` dos fixtures de listing, barrando vazamento de preço ou endereço.
+
+
+No servidor TypeScript, `allowed_channels: []` não autoriza nenhum canal; a
+chave explícita `"*"` autoriza qualquer canal a passar por essa primeira
+verificação, mas nunca dispensa as demais regras. Para uma regra aplicável à
+ação e ao papel, o avaliador suporta o predicado booleano
+`broker_is_assigned`. O integrador precisa verificar a atribuição ao recurso e
+fornecer o fato no contexto confiável. O endpoint local não aceita essa
+atestação no corpo HTTP. Predicado desconhecido, valor inválido ou fato
+indisponível bloqueia a projeção; papel de broker, sozinho, não prova vínculo.
+Esta implementação não executa a AST proposta na RFC em rascunho.

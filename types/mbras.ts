@@ -377,7 +377,10 @@ export const Ownership = z.object({
   ends_at: dateOnly.nullish(),
   provenance: Provenance,
   audit: AuditStamp,
-}).strict();
+}).strict().refine(
+  (row) => (row.unit_id != null) !== (row.property_id != null),
+  { message: "Ownership must have exactly one non-null unit_id or property_id" },
+);
 
 export const Broker = z.object({
   id: uuid,
@@ -492,7 +495,11 @@ export const DataSubjectRequest = z.object({
   resolution_action: RetentionAction.nullish(),
   affected_record_ids: z.array(uuid).default([]),
   notes: z.string().nullish(),
-}).strict();
+}).strict().refine(
+  (row) => row.status !== "fulfilled" || row.request_type !== "deletion"
+    || (row.resolution_action != null && row.affected_record_ids.length > 0),
+  { message: "Fulfilled deletion requires a resolution action and affected record IDs" },
+);
 
 export const RetentionPolicy = z.object({
   id: uuid,
@@ -654,7 +661,10 @@ export const DSARPropagation = z.object({
   evidence_ref: z.string().nullish(),
   failure_code: z.string().nullish(),
   updated_at: datetime,
-}).strict();
+}).strict().refine(
+  (row) => row.status !== "fulfilled" || (row.evidence_ref != null && /\S/u.test(row.evidence_ref)),
+  { path: ["evidence_ref"], message: "Fulfilled propagation requires an evidence reference" },
+);
 
 export const AutomatedDecisionRecord = z.object({
   id: uuid,

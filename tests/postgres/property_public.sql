@@ -54,11 +54,11 @@ BEGIN
   FROM property_public
   WHERE id = '10000000-0000-4000-8000-000000000003';
 
-  IF projected.latitude_approx <> -23.58 OR projected.longitude_approx <> -46.68 THEN
+  IF projected.latitude_approx IS DISTINCT FROM -23.58 OR projected.longitude_approx IS DISTINCT FROM -46.68 THEN
     RAISE EXCEPTION 'public coordinates were not reduced: %, %',
       projected.latitude_approx, projected.longitude_approx;
   END IF;
-  IF projected.asking_price_amount <> 1750000000 OR projected.building_name <> 'Edifício Teste' THEN
+  IF projected.asking_price_amount IS DISTINCT FROM 1750000000 OR projected.building_name IS DISTINCT FROM 'Edifício Teste' THEN
     RAISE EXCEPTION 'public price/building projection is incorrect';
   END IF;
 END;
@@ -74,7 +74,7 @@ DECLARE projected RECORD;
 BEGIN
   SELECT * INTO STRICT projected FROM property_public
   WHERE id = '10000000-0000-4000-8000-000000000003';
-  IF projected.latitude_approx <> -23.60 OR projected.longitude_approx <> -46.69 THEN
+  IF projected.latitude_approx IS DISTINCT FROM -23.60 OR projected.longitude_approx IS DISTINCT FROM -46.69 THEN
     RAISE EXCEPTION 'public projection is stale: %, %',
       projected.latitude_approx, projected.longitude_approx;
   END IF;
