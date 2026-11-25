@@ -107,6 +107,11 @@ test("UnitMatcher accurately deduplicates properties by matricula and address", 
     },
   ];
 
+  // Isolate matrícula from the corroborating address/area signals below:
+  // otherwise the heuristic can still reach confidence 1 without exact identity.
+  const exact = UnitMatcher.match(candidate, [{ id: "unit-uuid-1", matricula: "123456" }]);
+  assert.equal(exact.candidate_unit_id, "unit-uuid-1");
+  assert.equal(exact.confidence, 1);
   const match = UnitMatcher.match(candidate, existingInventory);
   assert.equal(match.candidate_unit_id, "unit-uuid-1");
   assert.equal(match.confidence, 1.0);
