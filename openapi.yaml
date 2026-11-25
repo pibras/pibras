@@ -8,7 +8,8 @@ info:
     compatível: leitura de unidades, imóveis, listings, política de exposição
     e catálogo de casos de conformidade. É um contrato de referência; não
     implementa um servidor de autenticação, mas exige portador (bearer) em
-    todas as operações e erros padronizados 400/401/403/404.
+    operações protegidas. x-implementation distingue as operações apenas especificadas
+    (specification-only) das disponíveis no servidor local (local-server). O health check é público.
 servers:
   - url: https://api.pibras.org/v0
     description: URL ilustrativa para implementações de referência.
@@ -25,6 +26,7 @@ paths:
   /units/{unit_id}:
     get:
       tags: [Units]
+      x-implementation: specification-only
       operationId: getUnit
       summary: Recupera uma unidade física durável.
       parameters:
@@ -43,6 +45,7 @@ paths:
   /properties/{property_id}:
     get:
       tags: [Properties]
+      x-implementation: specification-only
       operationId: getProperty
       summary: Recupera um ciclo comercial de imóvel.
       parameters:
@@ -61,6 +64,7 @@ paths:
   /listings/{listing_id}:
     get:
       tags: [Listings]
+      x-implementation: specification-only
       operationId: getListing
       summary: Recupera uma exposição por canal.
       parameters:
@@ -79,6 +83,7 @@ paths:
   /properties/{property_id}/exposure-policy:
     get:
       tags: [ExposurePolicy]
+      x-implementation: specification-only
       operationId: getPropertyExposurePolicy
       summary: Recupera a política de exposição vigente para um imóvel.
       parameters:
@@ -97,6 +102,7 @@ paths:
   /conformance/cases:
     get:
       tags: [Conformance]
+      x-implementation: specification-only
       operationId: listConformanceCases
       summary: Lista os casos golden que uma implementação compatível deve executar.
       responses:
@@ -115,6 +121,7 @@ paths:
   /privacy/sharing-decisions:
     post:
       tags: [PrivacyOperations]
+      x-implementation: specification-only
       operationId: decideSharing
       summary: Avalia previamente um compartilhamento e aplica default-deny.
       requestBody:
@@ -139,6 +146,7 @@ paths:
   /privacy/sharing-events:
     post:
       tags: [PrivacyOperations]
+      x-implementation: specification-only
       operationId: appendSharingEvent
       summary: Registra no ledger um compartilhamento efetivamente realizado.
       requestBody:
@@ -163,6 +171,7 @@ paths:
   /privacy/dsar-propagations:
     post:
       tags: [PrivacyOperations]
+      x-implementation: specification-only
       operationId: propagateDataSubjectRequest
       summary: Registra e acompanha a propagação de uma solicitação do titular.
       requestBody:
@@ -184,14 +193,234 @@ paths:
           $ref: "#/components/responses/UnauthorizedResponse"
         "403":
           $ref: "#/components/responses/ForbiddenResponse"
+  /health:
+    get:
+      operationId: healthCheck
+      x-implementation: local-server
+      servers:
+      - url: /
+      security: []
+      responses:
+        '200':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /api/v1/ingest/raw:
+    post:
+      operationId: ingestRaw
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RawInput'
+      responses:
+        '201':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawReceiptEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/ingest/csv-row:
+    post:
+      operationId: mapCsvRow
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CsvInput'
+      responses:
+        '201':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvBundleEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/ingest/kenlo:
+    post:
+      operationId: mapKenlo
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KenloInput'
+      responses:
+        '201':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBundleEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/ingest/zap-xml:
+    post:
+      operationId: mapZapXml
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/XmlInput'
+      responses:
+        '201':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaBundleEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/dedupe/match:
+    post:
+      operationId: matchUnit
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchInput'
+      responses:
+        '200':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchResultEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/survivorship/arbitrate:
+    post:
+      operationId: arbitrate
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArbitrationInput'
+      responses:
+        '200':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArbitrationResultEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/policy/project:
+    post:
+      operationId: projectPolicy
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectionInput'
+      responses:
+        '200':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectionResultEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/crm/twenty/from:
+    post:
+      operationId: importTwenty
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrmInput'
+      responses:
+        '200':
+          description: Resultado do servidor local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrmResultEnvelope'
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
+  /api/v1/feeds/portal:
+    post:
+      operationId: generateFeed
+      x-implementation: local-server
+      servers:
+      - url: /
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedInput'
+      responses:
+        '200':
+          description: Resultado do servidor local.
+          content:
+            application/xml:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Local401'
+        '403':
+          $ref: '#/components/responses/Local403'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
       description: >
-        Token portador exigido em todas as operações. Requisições sem
+        Token portador exigido nas operações protegidas. Requisições sem
         credencial recebem 401; credenciais sem permissão de exposição
         recebem 403.
   parameters:
@@ -220,6 +449,426 @@ components:
         type: string
         format: uuid
   schemas:
+    Health:
+      type: object
+      required:
+      - status
+      - version
+      - timestamp
+      properties:
+        status:
+          const: ok
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    LocalError:
+      type: object
+      required:
+      - success
+      - error
+      properties:
+        success:
+          const: false
+        error:
+          type: string
+    RawInput:
+      type: object
+      required:
+      - source_system
+      - payload
+      properties:
+        source_system:
+          $ref: ./schema/mbras.schema.json#/$defs/SourceSystem
+        payload:
+          oneOf:
+          - type: object
+          - type: array
+            items:
+              type: object
+    RawReceipt:
+      type: object
+      required:
+      - ingestion_id
+      - source_system
+      - payload_sha256
+      - record_count
+      - trust_tier
+      - ingested_at
+      - provenance
+      - payload
+      properties:
+        ingestion_id:
+          type: string
+          format: uuid
+        source_system:
+          $ref: ./schema/mbras.schema.json#/$defs/SourceSystem
+        payload_sha256:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        record_count:
+          type: integer
+        trust_tier:
+          type: integer
+        ingested_at:
+          type: string
+          format: date-time
+        provenance:
+          $ref: ./schema/mbras.schema.json#/$defs/Provenance
+        payload:
+          oneOf:
+          - type: object
+          - type: array
+            items:
+              type: object
+    CsvInput:
+      type: object
+      required:
+      - row
+      properties:
+        row:
+          type: object
+        batch_id:
+          type: string
+    KenloInput:
+      type: object
+      description: Registro aberto do webhook Kenlo.
+      properties:
+        codigo:
+          type:
+          - string
+          - number
+          - 'null'
+        endereco:
+          anyOf:
+          - type: object
+          - type: 'null'
+    XmlInput:
+      type: object
+      required:
+      - xml_item
+      properties:
+        xml_item:
+          type: string
+        batch_id:
+          type: string
+    CsvBundle:
+      type: object
+      required:
+      - unit
+      - property
+      - raw_receipt
+      properties:
+        unit:
+          $ref: '#/components/schemas/Unit'
+        property:
+          $ref: '#/components/schemas/Property'
+        raw_receipt:
+          $ref: '#/components/schemas/RawReceipt'
+    MediaBundle:
+      allOf:
+      - $ref: '#/components/schemas/CsvBundle'
+      - type: object
+        required:
+        - media_assets
+        properties:
+          media_assets:
+            type: array
+            items:
+              $ref: ./schema/mbras.schema.json#/$defs/MediaAsset
+    MatchInput:
+      type: object
+      required:
+      - incoming_unit
+      - existing_inventory
+      properties:
+        incoming_unit:
+          $ref: '#/components/schemas/Unit'
+        existing_inventory:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            properties:
+              id:
+                type: string
+    MatchResult:
+      type: object
+      required:
+      - candidate_unit_id
+      - confidence
+      - review_state
+      - match_reasons
+      properties:
+        candidate_unit_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        review_state:
+          $ref: ./schema/mbras.schema.json#/$defs/DedupeReviewState
+        match_reasons:
+          type: array
+          items:
+            type: string
+    ArbitrationInput:
+      type: object
+      required:
+      - entity_type
+      - entity_id
+      - current_data
+      - current_trust_tier
+      - incoming_data
+      - incoming_source
+      - incoming_trust_tier
+      properties:
+        entity_type:
+          type: string
+          enum:
+          - property
+          - unit
+          - building
+          - party
+        entity_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+        current_data:
+          anyOf:
+          - type: object
+          - type: 'null'
+        current_trust_tier:
+          anyOf:
+          - type: integer
+          - type: 'null'
+        incoming_data:
+          type: object
+        incoming_source:
+          $ref: ./schema/mbras.schema.json#/$defs/SourceSystem
+        incoming_trust_tier:
+          type: integer
+    ArbitrationResult:
+      type: object
+      required:
+      - action
+      - applied_data
+      - pending_change
+      - reasons
+      properties:
+        action:
+          type: string
+          enum:
+          - direct_apply
+          - create_pending_change
+          - mixed
+          - noop
+        applied_data:
+          type: object
+        pending_change:
+          anyOf:
+          - type: object
+          - type: 'null'
+        reasons:
+          type: array
+          items:
+            type: string
+    ProjectionInput:
+      type: object
+      required:
+      - property
+      - policy
+      - channel_type
+      - caller_role
+      properties:
+        property:
+          $ref: '#/components/schemas/Property'
+        unit:
+          $ref: '#/components/schemas/Unit'
+        media_assets:
+          type: array
+          items:
+            $ref: ./schema/mbras.schema.json#/$defs/MediaAsset
+        policy:
+          $ref: '#/components/schemas/ExposurePolicy'
+        channel_type:
+          type: string
+          enum:
+          - website
+          - portal
+          - crm
+          - broker_network
+          - paid_ad
+        caller_role:
+          type: string
+    ProjectionResult:
+      anyOf:
+      - type: object
+        required:
+        - property
+        - unit
+        - media_assets
+        - evaluation
+        properties:
+          property:
+            type: object
+          unit:
+            anyOf:
+            - type: object
+            - type: 'null'
+          media_assets:
+            type: array
+            items:
+              type: object
+          evaluation:
+            type: object
+            required:
+            - decision
+            - reasons
+            properties:
+              decision:
+                type: string
+                enum:
+                - allow
+                - mask
+                - deny
+                - needs_approval
+              reasons:
+                type: array
+                items:
+                  type: string
+      - type: 'null'
+    CrmInput:
+      type: object
+      required:
+      - payload
+      - currentProperty
+      - currentUnit
+      properties:
+        payload:
+          type: object
+        currentProperty:
+          anyOf:
+          - $ref: '#/components/schemas/Property'
+          - type: 'null'
+        currentUnit:
+          anyOf:
+          - $ref: '#/components/schemas/Unit'
+          - type: 'null'
+    CrmResult:
+      type: object
+      required:
+      - propertyArbitration
+      - raw_receipt
+      properties:
+        propertyArbitration:
+          $ref: '#/components/schemas/ArbitrationResult'
+        unitArbitration:
+          $ref: '#/components/schemas/ArbitrationResult'
+        raw_receipt:
+          $ref: '#/components/schemas/RawReceipt'
+    FeedInput:
+      type: object
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required:
+            - property
+            - policy
+            properties:
+              property:
+                $ref: '#/components/schemas/Property'
+              unit:
+                $ref: '#/components/schemas/Unit'
+              policy:
+                $ref: '#/components/schemas/ExposurePolicy'
+              media_assets:
+                type: array
+                items:
+                  $ref: ./schema/mbras.schema.json#/$defs/MediaAsset
+        format:
+          type: string
+          enum:
+          - zap
+          - pibras
+    RawReceiptEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/RawReceipt'
+    CsvBundleEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/CsvBundle'
+    MediaBundleEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/MediaBundle'
+    MatchResultEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/MatchResult'
+    ArbitrationResultEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/ArbitrationResult'
+    ProjectionResultEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/ProjectionResult'
+    CrmResultEnvelope:
+      type: object
+      required:
+      - success
+      - data
+      properties:
+        success:
+          const: true
+        data:
+          $ref: '#/components/schemas/CrmResult'
     Unit:
       $ref: "./schema/mbras.schema.json#/$defs/Unit"
     Property:
@@ -353,3 +1002,15 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    Local401:
+      description: Credencial portadora ausente.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LocalError'
+    Local403:
+      description: Credencial não autorizada ou servidor sem token configurado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LocalError'
