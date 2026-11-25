@@ -19,3 +19,5 @@ O comando de construção imprime o SHA-256 do ZIP integral e o commit de origem
 **Inventário:** norma, RFCs e documentação (exceto planos internos), OpenAPI, schemas, tipos, DDL, mapeamentos, exemplos, casos golden, metadados de versão/política/licenças e ferramentas isoladas de consumo e verificação. O inventário efetivo por caminho e a versão declarada de cada contrato/projeto estão em `PACKAGE-MANIFEST.json`; o SHA Git identifica de forma inequívoca as revisões dos componentes sem versão própria. Registros de licença seguem `licenses/APPLICABILITY.md`; as cópias dos textos são conferidas contra `licenses/PROVENANCE.json`. A inclusão de um draft não o promove à norma.
 
 **Teste negativo:** em uma segunda extração, altere um byte de um exemplo. O comando `verify` deve terminar com status diferente de zero. A verificação também rejeita omissões, arquivos adicionais e links simbólicos. Não execute os testes adicionando caches ou relatórios ao diretório que deseja verificar.
+
+O ensaio completo usado pela CI é `bash scripts/qa/check_public_package.sh`, após `uv sync --frozen`. Ele executa o consumidor sobre os bytes extraídos.

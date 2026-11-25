@@ -64,3 +64,6 @@ jobs:
 
       - name: Verify contracts, governance, audits and behavioral SQL
         run: bash scripts/qa/verify.sh contracts
+
+      - name: Rehearse distribution and independent consumption on the checked-out SHA
+        run: bash scripts/qa/check_public_package.sh
