@@ -11,7 +11,7 @@ PIBRAS alega, o que o repositório de fato executa e o que depende do operador?*
 - A verificação executável está em `tests/contracts/test_privacy_channels.py`. O teste
   `TestVerificationDocTraceability` falha se uma fixture citada aqui deixar de existir ou se uma
   fixture de privacidade deixar de ser citada.
-- Nenhuma fixture, schema, DDL ou avaliador foi alterado para produzir esta matriz. Divergências
+- As verificações usam exemplos sintéticos. Diferenças e correções
   encontradas estão em [§6](#6-lacunas-conhecidas), com o responsável provável segundo
   `docs/plans/v0.2-prontidao-publica.md`.
 - Todos os dados são sintéticos. O próprio teste varre `tests/golden/` e falha se algum valor
@@ -110,9 +110,9 @@ O registro abaixo distingue correções verificadas de lacunas pendentes.
 | GAP-02 | Resolvida. Exclusão cumprida requer ação e IDs afetados. | Testes de rejeição no contrato e no PostgreSQL | A04, A05 |
 | GAP-03 | As fixtures de privacidade não se encadeiam por identificador: `field-allowlist.active.json` tem `id` iniciado em `1111`, enquanto `sharing-event.delivered.json` aponta `field_allowlist_id` iniciado em `3333`; o mesmo ocorre entre parceiro e allowlist, e entre DSAR e propagação. Só a coerência por nome de campo e versão é testada. Rastrear uma decisão de ponta a ponta por ID exige fixtures encadeadas. | Observação | A03, A07 |
 | GAP-04 | Nomes e enumerações divergem entre JSON Schema e DDL. `SharingEvent` usa `shared_fields`, `field_allowlist_id`, `processing_purpose_id` e status `authorized`; a tabela usa `field_paths`, `allowlist_version_id`, `purpose_id` e `allowed`. `DSARPropagation` usa `evidence_ref` e `data_subject_request_id`; a tabela usa `external_reference` e `request_id`, e aceita o status `not_applicable`, ausente do schema. Não há mapeamento testado entre as duas representações. | Observação, por leitura | A04, A05 |
-| GAP-05 | O avaliador TypeScript (`src/policy/evaluator.ts`) seleciona regras apenas por ação e papel; não consulta `fields` nem `conditions`. As decisões por campo da fixture (por exemplo, corretor lê `address.street`) são executadas só pelo avaliador de referência em `scripts/validate_conformance.py`. Nenhum teste Node carrega `exposure-policy.default-deny.json` ou `listing.public-masked.json`. Não foi executada a comparação dos dois avaliadores. | Observação, por leitura | A04, A06 |
+| GAP-05 | O avaliador TypeScript exige evidência confiável da atribuição do corretor. Condições desconhecidas ou sem evidência negam a operação. A comparação exaustiva por campo entre avaliadores permanece aberta. | Testes de política e HTTP | A06 |
 | GAP-06 | `processing-purpose.valid.json` tem `retention_policy_id: null`. O schema permite, embora a norma ligue retenção a finalidade (§7). | Observação | A07 |
-| GAP-07 | `allowed_channels` é lista de texto livre no schema, sem a enumeração de canais. No avaliador TypeScript, lista vazia significa "sem restrição de canal", o oposto de default-deny no nível do canal. O avaliador de referência Python não avalia canal. | Observação, por leitura | A04, A06 |
+| GAP-07 | Lista de canais vazia ou ausente bloqueia o canal no avaliador TypeScript. O curinga explícito continua permitido. | Testes Node do avaliador | A06 |
 
 Fora do escopo desta suíte: mutações sistemáticas de regra (frente A08), contrato HTTP (A06) e
 comportamento do banco em PostgreSQL (A05). As mutações presentes aqui são verificações locais de
