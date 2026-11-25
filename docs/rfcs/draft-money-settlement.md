@@ -40,7 +40,9 @@ Manter o shape atual:
 -9007199254740991 <= amount <= 9007199254740991
 ```
 
-O intervalo inclusivo acima vale para quem seleciona explicitamente [money-safe-v1](../../schema/profiles/money-safe-v1.json) ou importa [SafeMoney](../../types/profiles/money-safe-v1.ts). O perfil referencia a definição base e acrescenta limites ao campo `amount`. A forma JSON, as moedas aceitas e a validação v0.2 permanecem disponíveis. O PostgreSQL conserva `BIGINT`; na exportação pelo perfil, verificar a faixa **antes** de converter um inteiro ou decimal exato em JavaScript `number`. Reportar valores fora da faixa e preservar o registro original.
+O intervalo inclusivo acima vale para quem seleciona explicitamente [money-safe-v1](../../schema/profiles/money-safe-v1.json) ou usa o módulo [money-safe-v1](../../types/profiles/money-safe-v1.ts). O perfil referencia a definição base e acrescenta limites ao campo `amount`. A forma JSON, as moedas aceitas e a validação v0.2 permanecem disponíveis. O PostgreSQL conserva `BIGINT`; na exportação pelo perfil, verificar a faixa **antes** de converter um inteiro ou decimal exato em JavaScript `number`. Reportar valores fora da faixa e preservar o registro original.
+
+Na entrada JSON, passe o texto bruto a `parseSafeMoneyJson(raw)` (Node 22 do projeto). A função valida o token decimal original antes de converter o inteiro exato em `number`. Não use `SafeMoney.parse(JSON.parse(raw))`: o arredondamento já ocorreu. `SafeMoney` valida objetos já materializados, não recupera precisão perdida.
 
 ### Exportação decimal
 
