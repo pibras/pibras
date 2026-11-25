@@ -1003,7 +1003,7 @@ CREATE TABLE dsar_propagation (
   partner_relationship_id UUID NOT NULL REFERENCES partner_relationship(id) ON DELETE RESTRICT,
   sharing_event_id UUID REFERENCES sharing_event(id) ON DELETE RESTRICT,
   status          dsar_propagation_status NOT NULL DEFAULT 'pending',
-  external_reference TEXT,
+  external_reference TEXT, -- nome físico de DSARPropagation.evidence_ref
   sent_at         TIMESTAMPTZ,
   acknowledged_at TIMESTAMPTZ,
   fulfilled_at    TIMESTAMPTZ,
@@ -1015,6 +1015,12 @@ CREATE TABLE dsar_propagation (
   CHECK (status <> 'sent' OR sent_at IS NOT NULL),
   CHECK (status <> 'acknowledged' OR acknowledged_at IS NOT NULL),
   CHECK (status <> 'fulfilled' OR fulfilled_at IS NOT NULL),
+  -- ECMAScript whitespace/line terminators, independent of database locale.
+  CONSTRAINT propagation_fulfilled_evidence CHECK (status <> 'fulfilled' OR (
+    external_reference IS NOT NULL AND btrim(external_reference,
+      U&'\0009\000A\000B\000C\000D\0020\00A0\1680\2000\2001\2002\2003\2004\2005\2006\2007\2008\2009\200A\2028\2029\202F\205F\3000\FEFF'
+    ) <> ''
+  )),
   CHECK (status <> 'failed' OR failure_code IS NOT NULL),
   UNIQUE (request_id, partner_relationship_id)
 );
