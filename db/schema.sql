@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Padrão PIBRAS de Dados Imobiliários — Modelo Canônico (Postgres / Neon)
--- Versão 0.1.0 · 2026-06-18
--- Fonte de verdade: docs/PROPERTY-STANDARD-v0.1.md
+-- DDL de referência da v0.2 aceita; preserva os aliases da v0.1.0.
+-- Norma: docs/PIBRAS-STANDARD-v0.2.md
 --
 -- Convenções:
 --   * dinheiro: <campo>_amount BIGINT (centavos) + <campo>_currency currency
@@ -237,6 +237,10 @@ CREATE TRIGGER trg_building_touch BEFORE UPDATE ON building FOR EACH ROW EXECUTE
 CREATE TABLE unit (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   building_id     UUID REFERENCES building(id) ON DELETE SET NULL,
+  -- [NULL] compara igual a [NULL], sem reservar UUID sentinela. Assim a
+  -- FK composta também valida imóveis sem edifício (PIBRAS-INV-002).
+  building_match_key UUID[] GENERATED ALWAYS AS (ARRAY[building_id]) STORED,
+  UNIQUE (id, building_match_key),
   matricula       TEXT,                   -- chave durável de identidade física
   dedupe_key      TEXT,
   normalized_address_key TEXT,
@@ -374,6 +378,9 @@ CREATE TABLE property (
   code            TEXT,
   unit_id         UUID NOT NULL REFERENCES unit(id) ON DELETE RESTRICT,
   building_id     UUID REFERENCES building(id) ON DELETE SET NULL,
+  building_match_key UUID[] GENERATED ALWAYS AS (ARRAY[building_id]) STORED,
+  CONSTRAINT property_unit_building_match FOREIGN KEY (unit_id, building_match_key)
+    REFERENCES unit(id, building_match_key) DEFERRABLE INITIALLY DEFERRED,
   transaction_type transaction_type NOT NULL,
   property_status property_status NOT NULL DEFAULT 'draft',
   availability    availability,
