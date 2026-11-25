@@ -88,3 +88,31 @@ def restore_legacy(parties, ownerships, receipt):
         row = {"ownership_pct": None, "owner_role": "owner", "is_primary": False, **o, "owner_id": o["party_id"]}
         links.append({k: row[k] for k in fields})
     return owners, links
+
+
+def check_corpus(corpus):
+    """Execute manifest expectations; identify the failing scenario without dumping PII."""
+    entities = corpus["entities"]
+    cases = corpus["cases"]
+    required = {"legacy", "canonical", "mixed", "coownership", "identity-conflict", "link-conflict"}
+    failures = [f"missing scenario: {name}" for name in sorted(required - {case["name"] for case in cases})]
+    for case in cases:
+        def rows(key):
+            return [entities[k] for k in case[key]]
+        args = [rows(k) for k in ("owners", "links", "parties", "ownerships")]
+        evidence = {entities["propertyA"]: entities["propertyEvidence"]}
+        try:
+            parties, edges, receipt = migrate(*args, evidence)
+        except ValueError as exc:
+            if str(exc) != case.get("reject"):
+                failures.append(f"{case['name']}: unexpected rejection {exc}")
+            continue
+        if "reject" in case:
+            failures.append(f"{case['name']}: expected rejection {case['reject']}")
+        elif parties != rows("expected_parties") or edges != rows("expected_ownerships"):
+            failures.append(f"{case['name']}: canonical records differ")
+        elif restore_legacy(parties, edges, receipt) != (args[0], args[1]):
+            failures.append(f"{case['name']}: legacy round-trip differs")
+        elif migrate(*args[:2], parties, edges, evidence) != (parties, edges, receipt):
+            failures.append(f"{case['name']}: repeated import differs")
+    return failures

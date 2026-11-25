@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from jsonschema import Draft202012Validator
 
+from mappings.ownership_compat import check_corpus
 from scripts.export_schema_org import ExportError, export as export_schema_org
 from scripts.export_schema_org import round_trip as schema_org_round_trip
 
@@ -402,7 +403,7 @@ def validate_case_index() -> list[CheckFailure]:
             failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"{case_id} has unsupported expected_result {expected_result!r}"))
 
         validator = optional_string(case.get("validator"), f"{case_id}.validator")
-        if validator not in {None, "schema-org"}:
+        if validator not in {None, "schema-org", "ownership-compatibility"}:
             failures.append(CheckFailure(CONFORMANCE_CASES_PATH, f"{case_id} has unknown validator {validator!r}"))
 
         if not fixture_path.exists():
@@ -418,6 +419,8 @@ def validate_case_index() -> list[CheckFailure]:
             applies_to = string_list(case.get("applies_to"), f"{case_id}.applies_to")
             if "schema" in applies_to and fixture.get("schema_ref") is None:
                 failures.append(CheckFailure(fixture_path, "schema case must declare schema_ref"))
+            if validator == "ownership-compatibility":
+                failures.extend(CheckFailure(fixture_path, message) for message in check_corpus(fixture))
             if validator == "schema-org" and "mappings" not in applies_to:
                 failures.append(CheckFailure(fixture_path, "schema-org case must apply to mappings"))
             if validator == "schema-org" and fixture.get("record") is None:

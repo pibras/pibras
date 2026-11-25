@@ -2,25 +2,17 @@ import json
 import unittest
 from pathlib import Path
 
-from mappings.ownership_compat import migrate, restore_legacy
+from mappings.ownership_compat import check_corpus
 
 
 class OwnershipCompatibility(unittest.TestCase):
+    def setUp(self):
+        fixture = Path(__file__).resolve().parents[1] / "golden/ownership-compatibility.json"
+        self.corpus = json.loads(fixture.read_text())
+
     def test_matrix(self):
-        corpus = json.loads((Path(__file__).resolve().parents[1] / "golden/ownership-compatibility.json").read_text())
-        entities = corpus["entities"]
-        for case in corpus["cases"]:
-            with self.subTest(case=case["name"]):
-                def rows(key):
-                    return [entities[k] for k in case[key]]
-                args = [rows(k) for k in ("owners", "links", "parties", "ownerships")]
-                evidence = {entities["propertyA"]: entities["propertyEvidence"]}
-                if "reject" in case:
-                    with self.assertRaisesRegex(ValueError, "^" + case["reject"] + "$"):
-                        migrate(*args, evidence)
-                else:
-                    parties, edges, receipt = migrate(*args, evidence)
-                    self.assertEqual(parties, rows("expected_parties"))
-                    self.assertEqual(edges, rows("expected_ownerships"))
-                    self.assertEqual(restore_legacy(parties, edges, receipt), (args[0], args[1]))
-                    self.assertEqual(migrate(*args[:2], parties, edges, evidence), (parties, edges, receipt))
+        self.assertEqual(check_corpus(self.corpus), [])
+
+    def test_wrong_expected_party_fails_by_case(self):
+        self.corpus["cases"][0]["expected_parties"] = ["partyB"]
+        self.assertIn("legacy: canonical records differ", check_corpus(self.corpus))
