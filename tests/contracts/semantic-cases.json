@@ -1,0 +1,17 @@
+[
+  {"id":"money.zero","entity":"Money","expected":true,"input":{"amount":0,"currency":"BRL"}},
+  {"id":"money.integer","entity":"Money","expected":true,"input":{"amount":1750000000,"currency":"BRL"}},
+  {"id":"money.fractional","entity":"Money","expected":false,"input":{"amount":0.5,"currency":"BRL"}},
+  {"id":"money.numeric-string","entity":"Money","expected":false,"input":{"amount":"100","currency":"BRL"}},
+  {"id":"presence.required","entity":"Money","expected":false,"input":{"amount":100}},
+  {"id":"null.required","entity":"Money","expected":false,"input":{"amount":100,"currency":null}},
+  {"id":"enum.unknown","entity":"Money","expected":false,"input":{"amount":100,"currency":"GBP"}},
+  {"id":"enum.eur","entity":"Money","expected":true,"input":{"amount":100,"currency":"EUR"}},
+  {"id":"unknown-field","entity":"Money","expected":false,"input":{"amount":1,"currency":"USD","extra":1}},
+  {"id":"defaults.omitted","entity":"ExposureRule","expected":true,"input":{"exposure_level":"public"},"defaults":{"field_visibility":{},"requires_approval":false}},
+  {"id":"defaults.explicit-null","entity":"ExposureRule","expected":false,"input":{"exposure_level":"public","requires_approval":null}},
+  {"id":"defaults.override","entity":"ExposureRule","expected":true,"input":{"exposure_level":"public","requires_approval":true}},
+  {"id":"id.nullable","entity":"ExposureRule","expected":true,"input":{"exposure_level":"public","property_id":null}},
+  {"id":"id.optional-not-null","entity":"ExposureRule","expected":false,"input":{"exposure_level":"public","id":null}},
+  {"id":"id.malformed","entity":"ExposureRule","expected":false,"input":{"exposure_level":"public","id":"not-a-uuid"}}
+]

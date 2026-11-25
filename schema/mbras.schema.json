@@ -517,6 +517,10 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["id","party_id","provenance","audit"],
+      "oneOf": [
+        { "required": ["unit_id"], "properties": { "unit_id": { "type": "string" } } },
+        { "required": ["property_id"], "properties": { "property_id": { "type": "string" } } }
+      ],
       "properties": {
         "id": { "type": "string", "format": "uuid" },
         "party_id": { "type": "string", "format": "uuid" },

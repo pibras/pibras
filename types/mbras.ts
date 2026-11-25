@@ -377,7 +377,10 @@ export const Ownership = z.object({
   ends_at: dateOnly.nullish(),
   provenance: Provenance,
   audit: AuditStamp,
-}).strict();
+}).strict().refine(
+  (row) => (row.unit_id != null) !== (row.property_id != null),
+  { message: "Ownership must have exactly one non-null unit_id or property_id" },
+);
 
 export const Broker = z.object({
   id: uuid,
