@@ -792,6 +792,16 @@ CREATE TABLE data_subject_request (
   audit_log_ref TEXT,
   resolution_action retention_action,
   affected_record_ids UUID[] NOT NULL DEFAULT '{}',
+  -- JSON/Zod accept only a flat array of UUIDs (never null elements).
+  CONSTRAINT dsr_record_ids_shape CHECK (
+    CASE WHEN cardinality(affected_record_ids) = 0 THEN true
+         WHEN array_ndims(affected_record_ids) = 1 THEN array_position(affected_record_ids, NULL) IS NULL
+         ELSE false END
+  ),
+  CONSTRAINT dsr_fulfilled_deletion_evidence CHECK (
+    request_type <> 'deletion' OR status <> 'fulfilled'
+    OR (resolution_action IS NOT NULL AND cardinality(affected_record_ids) > 0)
+  ),
   notes         TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
