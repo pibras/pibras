@@ -128,46 +128,15 @@ npm run export:types-manifest -- --out .omo/evidence/task-2-types-manifest.json
 scripts/qa/task-2.sh --report .omo/evidence/task-2-manifest.json
 ```
 
-Gates adicionais que a CI também executa (veja [CI](#ci)):
+### Verificação do candidato integrado
+
+Os jobs da [CI](.github/workflows/ci.yml) usam os mesmos comandos disponíveis localmente:
 
 ```bash
-uv run pytest
-uv run scripts/check_contract_parity.py
-uv run scripts/check_domain_invariants.py --entities tests/contracts/aligned/entities
-uv run scripts/check_identity.py
-uv run scripts/validate_release_policy.py governance/release-policy.yaml
-uv run pip-audit
-npm audit --audit-level=moderate
-git ls-files -z | xargs -0 uv run detect-secrets-hook --baseline .secrets.baseline
+bash scripts/qa/verify.sh conformance
+bash scripts/qa/verify.sh contracts
 ```
 
-DDL e teste comportamental em um PostgreSQL 16 descartável (a CI usa `postgres:16-alpine`, banco `pibras`, usuário `postgres`):
+O segundo comando cobre contratos, testes comportamentais em PostgreSQL 16 descartável, paridade e auditorias. Com PostgreSQL 16 instalado localmente, defina `PG_BINDIR` com o diretório dos binários. O modo padrão do teste SQL usa Docker.
 
-```bash
-psql -h 127.0.0.1 -U postgres -d pibras -v ON_ERROR_STOP=1 -f db/schema.sql
-psql -h 127.0.0.1 -U postgres -d pibras -v ON_ERROR_STOP=1 -f tests/postgres/property_public.sql
-```
-
-O segundo comando exige o primeiro já aplicado e termina com `ROLLBACK`, sem deixar dados. **Ele ainda não roda na CI** (veja [Próximos passos](#próximos-passos)).
-
-Os validadores standalone continuam sendo executados via `uv run scripts/...`; não use chamadas diretas como `python3 scripts/validate_*.py`.
-
-## CI
-
-O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) roda em `pull_request` e em `push` para `main` e `release/**`, com dois jobs:
-
-| Job (`name`) | Id | O que executa |
-|---|---|---|
-| `Conformance runner` | `conformance` | Instala só dependências de runtime (`uv sync --frozen --no-default-groups`) e roda `uv run --no-sync scripts/validate_conformance.py`. |
-| `Contracts and reference DDL` | `contracts` | Instala `uv sync --frozen` e `npm ci`; roda `uv run pytest`, `npm run typecheck` e `npm run test:types`; valida contratos (conformidade, OpenAPI, `openapi-spec-validator`, paridade, invariantes de domínio); valida governança (`check_identity.py`, `validate_release_policy.py`); audita dependências e segredos (`pip-audit`, `npm audit --audit-level=moderate`, `detect-secrets-hook`); e aplica `db/schema.sql` em PostgreSQL 16. |
-
-Diferenças conhecidas entre a CI e os comandos locais: `uv lock --check`, `npm run export:types-manifest` e `scripts/qa/task-2.sh` são checks locais e não rodam na CI; `tests/postgres/property_public.sql` também não.
-
-## Próximos passos
-
-1. ~~Fechar o De/Para em [`mappings/v0.1.0-code-to-v0.2.md`](mappings/v0.1.0-code-to-v0.2.md).~~ Concluído.
-2. ~~Promover [`docs/PIBRAS-STANDARD-v0.2.md`](docs/PIBRAS-STANDARD-v0.2.md) via RFC.~~ Concluído: aceito via [PIBRAS-RFC-001](docs/rfcs/accepted-001-v0.2-reconciliation.md) (2026-08-21).
-3. ~~Promover o runner de conformidade para CI.~~ Concluído: job `Conformance runner` (id `conformance`) em [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
-4. Completar a migração de `Owner` para `Party`/`Ownership` sem remover compatibilidade.
-5. Integrar `tests/postgres/property_public.sql` à CI, após a aplicação do DDL.
-6. Executar as frentes do [plano de prontidão pública v0.2](docs/plans/v0.2-prontidao-publica.md); a decisão de promoção cabe ao mantenedor, conforme [`docs/VERSIONING.md`](docs/VERSIONING.md) e `governance/release-policy.yaml`.
+Consulte o [mapeamento de titularidade](mappings/v0.1.0-code-to-v0.2.md) para a janela de compatibilidade e o [roteiro de empacotamento](docs/PACKAGE.md) para verificar o kit fora do checkout. A promoção depende da [política de release](governance/release-policy.yaml) e dos [critérios de aceite](docs/release-acceptance.md).
